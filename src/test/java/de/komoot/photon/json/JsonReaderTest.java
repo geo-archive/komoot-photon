@@ -79,7 +79,7 @@ class JsonReaderTest {
                 .hasFieldOrPropertyWithValue("bbox", new Envelope(9.5461636, 9.556083, 47.2415541, 47.2966235))
                 .hasFieldOrPropertyWithValue("importance", 0.10667666666666664)
                 .hasFieldOrPropertyWithValue("countryCode", "AT")
-                .hasFieldOrPropertyWithValue("rankAddress", 0)
+                .hasFieldOrPropertyWithValue("addressType", AddressType.OTHER)
                 .hasFieldOrPropertyWithValue("houseNumber", null)
                 .hasFieldOrPropertyWithValue("centroid", geomFactory.createPoint(new Coordinate(9.53713454, 47.27052526)))
                 .hasFieldOrPropertyWithValue("geometry", null);
@@ -108,7 +108,7 @@ class JsonReaderTest {
                         .hasFieldOrPropertyWithValue("bbox", new Envelope(9.5461636, 9.556083, 47.2415541, 47.2966235))
                         .hasFieldOrPropertyWithValue("importance", 0.10667666666666664)
                         .hasFieldOrPropertyWithValue("countryCode", "AT")
-                        .hasFieldOrPropertyWithValue("rankAddress", 0)
+                        .hasFieldOrPropertyWithValue("addressType", AddressType.OTHER)
                         .hasFieldOrPropertyWithValue("houseNumber", null)
                         .hasFieldOrPropertyWithValue("addressParts", Map.of())
                         .hasFieldOrPropertyWithValue("centroid", geomFactory.createPoint(new Coordinate(9.53713454, 47.27052526)))
@@ -132,7 +132,7 @@ class JsonReaderTest {
         input.println(TEST_SIMPLE_STREAM.replaceFirst("100818", "1".repeat(61)));
 
         assertThatIOException()
-                .isThrownBy(() -> readJson())
+                .isThrownBy(this::readJson)
                 .withMessageContaining("exceed 60 char");
     }
 
@@ -141,7 +141,7 @@ class JsonReaderTest {
         input.println(TEST_SIMPLE_STREAM.replaceFirst("100818", "\"a b@\""));
 
         assertThatIOException()
-                .isThrownBy(() -> readJson())
+                .isThrownBy(this::readJson)
                 .withMessageContaining("must only consist of letters");
     }
 
@@ -348,7 +348,7 @@ class JsonReaderTest {
         var importer = readJson();
 
         assertThat(importer).singleElement()
-                .hasFieldOrPropertyWithValue("rankAddress", 30);
+                .hasFieldOrPropertyWithValue("addressType", AddressType.OTHER);
     }
 
     @Test
@@ -460,4 +460,14 @@ class JsonReaderTest {
                 .hasFieldOrPropertyWithValue("tagValue", "yes");
 
     }
+
+    @Test
+    void testAddressType() throws IOException {
+        input.println(TEST_SIMPLE_STREAM.replace("\"rank_address\" : 0", "\"address_type\" : \"house\""));
+        var importer = readJson();
+
+        assertThat(importer).singleElement()
+                .hasFieldOrPropertyWithValue("addressType", AddressType.HOUSE);
+    }
+
 }

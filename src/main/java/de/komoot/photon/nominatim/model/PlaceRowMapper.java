@@ -42,6 +42,7 @@ public class PlaceRowMapper implements RowMapper<PhotonDoc> {
         } else if (!CATEGORY_PATTERN.matcher(osmValue).matches()) {
             osmValue = "yes";
         }
+        var addressType = AddressType.fromRank(rs.getInt("rank_address"));
         PhotonDoc doc = new PhotonDoc(Long.toString(rs.getLong("place_id")),
                 rs.getString("osm_type"), rs.getLong("osm_id"),
                 osmKey, osmValue)
@@ -51,7 +52,7 @@ public class PlaceRowMapper implements RowMapper<PhotonDoc> {
                 .bbox(dbutils.extractGeometry(rs, "bbox"))
                 .countryCode(rs.getString("country_code"))
                 .centroid(Objects.requireNonNull(dbutils.extractGeometry(rs, "centroid")))
-                .rankAddress(rs.getInt("rank_address"))
+                .addressType(addressType)
                 .postcode(rs.getString("postcode"));
 
         if (useGeometryColumn) {

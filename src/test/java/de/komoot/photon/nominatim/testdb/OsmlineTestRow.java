@@ -1,6 +1,7 @@
 package de.komoot.photon.nominatim.testdb;
 
 import de.komoot.photon.PhotonDoc;
+import de.komoot.photon.nominatim.model.AddressType;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -52,7 +53,7 @@ public class OsmlineTestRow {
         Assertions.assertEquals(osmId, (Long) doc.getOsmId());
         Assertions.assertEquals("place", doc.getTagKey());
         Assertions.assertEquals("house_number", doc.getTagValue());
-        Assertions.assertEquals(30, (Integer) doc.getRankAddress());
+        Assertions.assertEquals(AddressType.HOUSE, doc.getAddressType());
     }
 
     public Long getPlaceId() {

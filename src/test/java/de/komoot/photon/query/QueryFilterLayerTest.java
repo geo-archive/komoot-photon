@@ -3,6 +3,7 @@ package de.komoot.photon.query;
 import de.komoot.photon.ESBaseTester;
 import de.komoot.photon.Importer;
 import de.komoot.photon.PhotonDoc;
+import de.komoot.photon.nominatim.model.AddressType;
 import de.komoot.photon.searcher.PhotonResult;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
@@ -24,14 +25,14 @@ class QueryFilterLayerTest extends ESBaseTester {
 
         int id = 0;
 
-        int[] docRanks = {10, 13, 14, 22}; // state, city * 2, locality
-        for (int rank : docRanks) {
+        AddressType[] docRanks = {AddressType.STATE, AddressType.CITY, AddressType.CITY, AddressType.LOCALITY};
+        for (var rank : docRanks) {
             instance.add(List.of(new PhotonDoc()
                             .placeId(Integer.toString(id)).osmType("W").osmId(++id).tagKey("place").tagValue("value")
                             .names(makeDocNames("name", "berlin"))
                             .centroid(makePoint(10, 10))
 
-                            .rankAddress(rank)));
+                            .addressType(rank)));
         }
 
         instance.finish();

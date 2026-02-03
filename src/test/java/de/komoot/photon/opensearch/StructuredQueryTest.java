@@ -28,16 +28,6 @@ public class StructuredQueryTest extends ESBaseTester {
     private static final String STREET = "Some street";
     public static final String DISTRICT_POST_CODE = "12346";
 
-    private static int getRank(AddressType type) {
-        for (int i = 0; i < 50; ++i) {
-            if (type.coversRank(i)) {
-                return i;
-            }
-        }
-
-        return 99;
-    }
-
     @BeforeAll
     void setUp(@TempDir Path dataDirectory) throws Exception {
         getProperties().setLanguages(new String[]{LANGUAGE, "de", "fr"});
@@ -48,14 +38,14 @@ public class StructuredQueryTest extends ESBaseTester {
                 .names(makeDocNames("name", "Germany"))
                 .countryCode(COUNTRY_CODE)
                 .importance(1.0)
-                .rankAddress(getRank(AddressType.COUNTRY));
+                .addressType(AddressType.COUNTRY);
 
         var city = new PhotonDoc("1", "R", 1, "place", "city")
                 .names(makeDocNames("name", CITY))
                 .countryCode(COUNTRY_CODE)
                 .postcode("12345")
                 .importance(1.0)
-                .rankAddress(getRank(AddressType.CITY));
+                .addressType(AddressType.CITY);
 
         Map<String, String> address = new HashMap<>();
         address.put("city", CITY);
@@ -65,7 +55,7 @@ public class StructuredQueryTest extends ESBaseTester {
                 .postcode(DISTRICT_POST_CODE)
                 .addAddresses(address, getProperties().getLanguages())
                 .importance(1.0)
-                .rankAddress(getRank(AddressType.DISTRICT));
+                .addressType(AddressType.DISTRICT);
 
         var street = new PhotonDoc("3", "W", 3, "place", "street")
                 .names(makeDocNames("name", STREET))
@@ -73,7 +63,7 @@ public class StructuredQueryTest extends ESBaseTester {
                 .postcode("12345")
                 .addAddresses(address, getProperties().getLanguages())
                 .importance(1.0)
-                .rankAddress(getRank(AddressType.STREET));
+                .addressType(AddressType.STREET);
 
         address.put("street", STREET);
         var house = new PhotonDoc("4", "R", 4, "place", "house")
@@ -82,7 +72,7 @@ public class StructuredQueryTest extends ESBaseTester {
                 .addAddresses(address, getProperties().getLanguages())
                 .houseNumber(HOUSE_NUMBER)
                 .importance(1.0)
-                .rankAddress(getRank(AddressType.HOUSE));
+                .addressType(AddressType.HOUSE);
 
         var busStop = new PhotonDoc("8", "N", 8, "highway", "house")
                 .names(makeDocNames("name", CITY + ' ' + STREET))
@@ -91,7 +81,7 @@ public class StructuredQueryTest extends ESBaseTester {
                 .addAddresses(address, getProperties().getLanguages())
                 .houseNumber(HOUSE_NUMBER)
                 .importance(1.0)
-                .rankAddress(getRank(AddressType.HOUSE));
+                .addressType(AddressType.HOUSE);
 
         instance.add(List.of(country));
         instance.add(List.of(city));
@@ -142,7 +132,7 @@ public class StructuredQueryTest extends ESBaseTester {
         var queryHandler = getServer().createStructuredSearchHandler(1);
         var results = queryHandler.search(request);
         assertEquals(1, results.size());
-        var result = results.get(0);
+        var result = results.getFirst();
         assertEquals(request.getHouseNumber(), result.get(DocFields.HOUSENUMBER));
     }
 
@@ -167,7 +157,7 @@ public class StructuredQueryTest extends ESBaseTester {
         var queryHandler = getServer().createStructuredSearchHandler(1);
         var results = queryHandler.search(request);
         assertEquals(1, results.size());
-        var result = results.get(0);
+        var result = results.getFirst();
         assertEquals(0, result.get(DocFields.OSM_ID));
     }
 
@@ -253,7 +243,7 @@ public class StructuredQueryTest extends ESBaseTester {
         var queryHandler = getServer().createStructuredSearchHandler(1);
         var results = queryHandler.search(request);
 
-        return results.get(0);
+        return results.getFirst();
     }
 
     private void addHamletHouse(Importer instance, int id, String houseNumber) {
@@ -266,7 +256,7 @@ public class StructuredQueryTest extends ESBaseTester {
                 .addAddresses(hamletAddress, getProperties().getLanguages())
                 .houseNumber(houseNumber)
                 .importance(1.0)
-                .rankAddress(getRank(AddressType.HOUSE));
+                .addressType(AddressType.HOUSE);
 
         instance.add(List.of(doc));
     }

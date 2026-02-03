@@ -7,6 +7,8 @@ import de.komoot.photon.Importer;
 import de.komoot.photon.PhotonDoc;
 import java.nio.file.Path;
 import java.util.List;
+
+import de.komoot.photon.nominatim.model.AddressType;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,7 +34,7 @@ class ApiDedupeTest extends ApiBaseTester {
                     .tagKey("highway")
                     .tagValue("residential")
                     .postcode("1000")
-                    .rankAddress(26)
+                    .addressType(AddressType.STREET)
                     .centroid(makePoint(15.94174, 45.80355))
                     .names(makeDocNames("name", "Pfanove"))
             )
@@ -46,7 +48,7 @@ class ApiDedupeTest extends ApiBaseTester {
                     .tagKey("highway")
                     .tagValue("residential")
                     .postcode("1000")
-                    .rankAddress(26)
+                    .addressType(AddressType.STREET)
                     .centroid(makePoint(15.94192, 45.802429))
                     .names(makeDocNames("name", "Pfanove"))
             )

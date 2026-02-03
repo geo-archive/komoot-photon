@@ -58,7 +58,7 @@ public class PhotonDoc {
     @Nullable private Envelope bbox = null;
     private double importance = 0;
     @Nullable private String countryCode = null;
-    private int rankAddress = 30;
+    private AddressType addressType = AddressType.OTHER;
 
     private Map<AddressType, Map<String, String>> addressParts = new EnumMap<>(AddressType.class);
     private ContextMap context = new ContextMap();
@@ -91,7 +91,7 @@ public class PhotonDoc {
         this.importance = other.importance;
         this.countryCode = other.countryCode;
         this.centroid = other.centroid;
-        this.rankAddress = other.rankAddress;
+        this.addressType = other.addressType;
         this.addressParts = other.addressParts;
         this.context = other.context;
         this.geometry = other.geometry;
@@ -189,8 +189,8 @@ public class PhotonDoc {
         return this;
     }
 
-    public PhotonDoc rankAddress(int rank) {
-        this.rankAddress = rank;
+    public PhotonDoc addressType(AddressType type) {
+        this.addressType = type;
         return this;
     }
 
@@ -201,11 +201,6 @@ public class PhotonDoc {
 
     public static String makeUid(String placeId, int objectId) {
         return (objectId <= 0) ? placeId : String.format("%s.%d", placeId, objectId);
-    }
-
-    @Nullable
-    public AddressType getAddressType() {
-        return AddressType.fromRank(rankAddress);
     }
 
     public boolean isUsefulForIndex() {
@@ -381,8 +376,8 @@ public class PhotonDoc {
         return this.countryCode;
     }
 
-    public int getRankAddress() {
-        return this.rankAddress;
+    public AddressType getAddressType() {
+        return addressType;
     }
 
     public Map<AddressType, Map<String, String>> getAddressParts() {
@@ -422,7 +417,7 @@ public class PhotonDoc {
                 ", bbox=" + bbox +
                 ", importance=" + importance +
                 ", countryCode='" + countryCode + '\'' +
-                ", rankAddress=" + rankAddress +
+                ", addressType=" + addressType.getName() +
                 ", addressParts=" + addressParts +
                 ", context=" + context +
                 ", houseNumber='" + houseNumber + '\'' +

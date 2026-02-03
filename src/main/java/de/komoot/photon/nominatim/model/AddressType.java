@@ -1,7 +1,6 @@
 package de.komoot.photon.nominatim.model;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -41,27 +40,13 @@ public enum AddressType {
      * Convert a Nominatim address rank into a Photon address type.
      *
      * @param addressRank Nominatim address rank.
-     * @return The corresponding address type or null if not covered.
+     * @return The corresponding address type or Other if not covered.
      */
-    @Nullable
     public static AddressType fromRank(int addressRank) {
-        for (AddressType a : AddressType.values()) {
-            if (a.coversRank(addressRank)) {
-                return a;
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Check if the given address rank is mapped to the given address type.
-     *
-     * @param addressRank Nominatim address rank.
-     * @return True, if the type covers the rank.
-     */
-    public boolean coversRank(int addressRank) {
-        return addressRank >= minRank && addressRank <= maxRank;
+        return Arrays.stream(AddressType.values())
+                .filter(a -> addressRank >= a.minRank && addressRank <= a.maxRank)
+                .findFirst()
+                .orElse(OTHER);
     }
 
     public String getName() {

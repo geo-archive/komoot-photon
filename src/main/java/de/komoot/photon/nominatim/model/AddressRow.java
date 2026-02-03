@@ -23,7 +23,7 @@ public class AddressRow {
     }
 
     public static AddressRow make(Map<String, String> name, String osmKey, String osmValue,
-                                  int rankAddress, String[] languages) {
+                                  AddressType addressType, String[] languages) {
         ContextMap context = new ContextMap();
 
         if (("place".equals(osmKey) && "postcode".equals(osmValue))
@@ -31,7 +31,7 @@ public class AddressRow {
             return new AddressRow(
                     new NameMap().setName("ref", name, "ref"),
                     context,
-                    AddressType.fromRank(rankAddress),
+                    addressType,
                     true
             );
         } else {
@@ -42,7 +42,7 @@ public class AddressRow {
         return new AddressRow(
                 new NameMap().setLocaleNames(name, languages),
                 context,
-                AddressType.fromRank(rankAddress),
+                addressType,
                 false);
     }
 

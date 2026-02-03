@@ -5,10 +5,7 @@ import de.komoot.photon.PhotonDoc;
 import de.komoot.photon.PhotonDocAddressSet;
 import de.komoot.photon.PhotonDocInterpolationSet;
 import de.komoot.photon.config.PostgresqlConfig;
-import de.komoot.photon.nominatim.model.AddressRow;
-import de.komoot.photon.nominatim.model.NominatimAddressCache;
-import de.komoot.photon.nominatim.model.OsmlineRowMapper;
-import de.komoot.photon.nominatim.model.PlaceRowMapper;
+import de.komoot.photon.nominatim.model.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NullMarked;
@@ -99,7 +96,7 @@ public class NominatimImporter extends NominatimConnector {
                                 dbutils.getMap(rs, "parent_name"),
                                 rs.getString("parent_class"),
                                 rs.getString("parent_type"),
-                                rs.getInt("parent_rank_address"),
+                                AddressType.fromRank(rs.getInt("parent_rank_address")),
                                 dbProperties.getLanguages())));
                     }
                     doc.addAddresses(addressCache.getAddressList(rs.getString("addresslines")));
@@ -120,7 +117,7 @@ public class NominatimImporter extends NominatimConnector {
                                 dbutils.getMap(rs, "parent_name"),
                                 rs.getString("parent_class"),
                                 rs.getString("parent_type"),
-                                rs.getInt("parent_rank_address"),
+                                AddressType.fromRank(rs.getInt("parent_rank_address")),
                                 dbProperties.getLanguages())));
                     }
                     doc.addAddresses(addressCache.getAddressList(rs.getString("addresslines")));

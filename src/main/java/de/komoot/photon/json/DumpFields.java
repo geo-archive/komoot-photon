@@ -20,6 +20,7 @@ public class DumpFields {
     public static final String PLACE_OSM_VALUE = "osm_value";
     public static final String PLACE_CATEGORIES = "categories";
     public static final String PLACE_RANK_ADDRESS = "rank_address";
+    public static final String PLACE_ADDRESS_TYPE = "address_type";
     public static final String PLACE_IMPORTANCE = "importance";
     public static final String PLACE_NAMES = "name";
     public static final String PLACE_HOUSENUMBER = "housenumber";

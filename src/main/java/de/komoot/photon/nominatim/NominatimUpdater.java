@@ -91,7 +91,7 @@ public class NominatimUpdater extends NominatimConnector {
                         dbutils.getMap(rs, "parent_name"),
                         rs.getString("parent_class"),
                         rs.getString("parent_type"),
-                        rs.getInt("parent_rank_address"),
+                        AddressType.fromRank(rs.getInt("parent_rank_address")),
                         dbProperties.getLanguages())));
             }
             doc.addAddresses(
@@ -118,7 +118,7 @@ public class NominatimUpdater extends NominatimConnector {
                         dbutils.getMap(rs, "parent_name"),
                         rs.getString("parent_class"),
                         rs.getString("parent_type"),
-                        rs.getInt("parent_rank_address"),
+                        AddressType.fromRank(rs.getInt("parent_rank_address")),
                         dbProperties.getLanguages())));
             }
             doc.addAddresses(
