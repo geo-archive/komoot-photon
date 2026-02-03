@@ -34,7 +34,7 @@ public class NominatimAddressCache {
                     dbutils.getMap(rs, "name"),
                     rs.getString("class"),
                     rs.getString("type"),
-                    rs.getInt("rank_address"),
+                    AddressType.fromRank(rs.getInt("rank_address")),
                     languages);
             if (!row.getName().isEmpty()) {
                 addresses.put(

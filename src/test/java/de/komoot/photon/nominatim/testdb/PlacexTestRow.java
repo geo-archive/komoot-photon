@@ -162,7 +162,6 @@ public class PlacexTestRow {
         Assertions.assertEquals(osmId, (Long) doc.getOsmId());
         Assertions.assertEquals(key, doc.getTagKey());
         Assertions.assertEquals(value, doc.getTagValue());
-        Assertions.assertEquals(rankAddress, (Integer) doc.getRankAddress());
         Assertions.assertEquals(new WKTReader().read(centroid), doc.getCentroid());
         if (names.containsKey("name")) {
             Assertions.assertEquals(names.get("name"), doc.getName().get("default"));

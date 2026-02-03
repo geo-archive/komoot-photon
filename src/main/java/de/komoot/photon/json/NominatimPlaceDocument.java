@@ -6,6 +6,7 @@ import de.komoot.photon.ConfigExtraTags;
 import de.komoot.photon.PhotonDoc;
 import de.komoot.photon.PhotonDocAddressSet;
 import de.komoot.photon.nominatim.model.AddressRow;
+import de.komoot.photon.nominatim.model.AddressType;
 import de.komoot.photon.nominatim.model.NameMap;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -59,10 +60,11 @@ public class NominatimPlaceDocument {
 
     @Nullable
     public AddressRow asAddressRow(String[] languages) {
-        if (doc.getRankAddress() > 0 && doc.getRankAddress() < 28 && !names.isEmpty()) {
+        var addressType = doc.getAddressType();
+        if (!names.isEmpty() && addressType != AddressType.HOUSE && addressType != AddressType.OTHER) {
             final var row = AddressRow.make(
                     names, doc.getTagKey(), doc.getTagValue(),
-                    doc.getRankAddress(), languages);
+                    addressType, languages);
             return row.getName().isEmpty() ? null : row;
         }
 
@@ -145,7 +147,18 @@ public class NominatimPlaceDocument {
     @JsonProperty(DumpFields.PLACE_RANK_ADDRESS)
     void setRankAddress(@Nullable Integer rankAddress) {
         if (rankAddress != null) {
-            doc.rankAddress(rankAddress);
+            doc.addressType(AddressType.fromRank(rankAddress));
+        }
+    }
+
+    @JsonProperty(DumpFields.PLACE_ADDRESS_TYPE)
+    void setAddressType(@Nullable String addressType) {
+        if (addressType != null) {
+            try {
+                doc.addressType(AddressType.valueOf(addressType.toUpperCase()));
+            } catch (IllegalArgumentException e) {
+                doc.addressType(AddressType.OTHER);
+            }
         }
     }
 

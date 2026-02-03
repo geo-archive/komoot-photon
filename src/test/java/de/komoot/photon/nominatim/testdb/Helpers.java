@@ -1,7 +1,7 @@
 package de.komoot.photon.nominatim.testdb;
 
+import org.jspecify.annotations.Nullable;
 import org.locationtech.jts.geom.Geometry;
-import org.springframework.lang.Nullable;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

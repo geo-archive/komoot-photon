@@ -3,6 +3,7 @@ package de.komoot.photon.nominatim;
 import de.komoot.photon.DatabaseProperties;
 import de.komoot.photon.config.PostgresqlConfig;
 import de.komoot.photon.nominatim.model.AddressRow;
+import de.komoot.photon.nominatim.model.AddressType;
 import de.komoot.photon.nominatim.model.NameMap;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.jspecify.annotations.NullMarked;
@@ -67,7 +68,7 @@ public class NominatimConnector {
                 var names = AddressRow.make(dbutils.getMap(rs, "name"),
                         "place",
                         "country",
-                        4,
+                        AddressType.COUNTRY,
                         languages).getName();
                 if (!names.isEmpty()) {
                     countryNames.put(rs.getString("country_code"), names);

@@ -121,7 +121,7 @@ class JsonDumperTest {
                 .containsEntry("osm_key", "highway")
                 .containsEntry("osm_value", "residential")
                 .containsEntry("categories", List.of("osm.highway.residential"))
-                .containsEntry("rank_address", 26)
+                .containsEntry("address_type", "street")
                 .containsEntry("importance", 0.123)
                 .containsEntry("country_code", "hu")
                 .doesNotContainKeys("parent_place_id", "postcode", "extra")

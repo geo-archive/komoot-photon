@@ -3,6 +3,7 @@ package de.komoot.photon.opensearch;
 import de.komoot.photon.ESBaseTester;
 import de.komoot.photon.Importer;
 import de.komoot.photon.PhotonDoc;
+import de.komoot.photon.nominatim.model.AddressType;
 import de.komoot.photon.query.SimpleSearchRequest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -32,7 +33,7 @@ class SuggestAddressesTest extends ESBaseTester {
                 .names(makeDocNames("name", STREET_NAME))
                 .countryCode("DE")
                 .importance(0.5)
-                .rankAddress(26);
+                .addressType(AddressType.STREET);
 
         // Add a house on that street
         var address = new HashMap<String, String>();
@@ -42,7 +43,7 @@ class SuggestAddressesTest extends ESBaseTester {
                 .houseNumber("42")
                 .addAddresses(address, getProperties().getLanguages())
                 .importance(0.1)
-                .rankAddress(30);
+                .addressType(AddressType.HOUSE);
 
         // Add houses on same street name in different cities (Auelestr scenario)
         var addressTriesen = new HashMap<String, String>();
@@ -53,7 +54,7 @@ class SuggestAddressesTest extends ESBaseTester {
                 .houseNumber("16")
                 .addAddresses(addressTriesen, getProperties().getLanguages())
                 .importance(0.1)
-                .rankAddress(30);
+                .addressType(AddressType.HOUSE);
 
         var addressVaduz = new HashMap<String, String>();
         addressVaduz.put("street", "Auelestr");
@@ -63,14 +64,14 @@ class SuggestAddressesTest extends ESBaseTester {
                 .houseNumber("16")
                 .addAddresses(addressVaduz, getProperties().getLanguages())
                 .importance(0.1)
-                .rankAddress(30);
+                .addressType(AddressType.HOUSE);
 
         // Add a street with pure alphabetic name (triggers short query path)
         var alphabeticStreet = new PhotonDoc("5", "W", 5, "highway", "residential")
                 .names(makeDocNames("name", "Romsdalsveien"))
                 .countryCode("NO")
                 .importance(0.5)
-                .rankAddress(26);
+                .addressType(AddressType.STREET);
 
         // Add a house on that street
         var addressRomsdalsveien = new HashMap<String, String>();
@@ -80,14 +81,14 @@ class SuggestAddressesTest extends ESBaseTester {
                 .houseNumber("10")
                 .addAddresses(addressRomsdalsveien, getProperties().getLanguages())
                 .importance(0.1)
-                .rankAddress(30);
+                .addressType(AddressType.HOUSE);
 
         // Add a street with spaces in name (triggers full query path)
         var multiWordStreet = new PhotonDoc("7", "W", 7, "highway", "residential")
                 .names(makeDocNames("name", "Nils Gotlands veg"))
                 .countryCode("NO")
                 .importance(0.5)
-                .rankAddress(26);
+                .addressType(AddressType.STREET);
 
         // Add a house on that street
         var addressNilsGotlands = new HashMap<String, String>();
@@ -97,7 +98,7 @@ class SuggestAddressesTest extends ESBaseTester {
                 .houseNumber("5")
                 .addAddresses(addressNilsGotlands, getProperties().getLanguages())
                 .importance(0.1)
-                .rankAddress(30);
+                .addressType(AddressType.HOUSE);
 
         instance.add(List.of(street, house, houseTriesen, houseVaduz, alphabeticStreet, houseRomsdalsveien,
                 multiWordStreet, houseNilsGotlands));
