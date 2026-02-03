@@ -1,17 +1,19 @@
 package de.komoot.photon.nominatim;
 
-import net.postgis.jdbc.PGgeometry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.PrecisionModel;
 import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.WKBReader;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.Map;
 
 /**
@@ -19,6 +21,7 @@ import java.util.Map;
  */
 @NullMarked
 public class PostgisDataAdapter implements DBDataAdapter {
+    private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory(new PrecisionModel(), 4326);
     private static final Logger LOGGER = LogManager.getLogger();
 
     @Override
@@ -34,22 +37,18 @@ public class PostgisDataAdapter implements DBDataAdapter {
     @Override
     @Nullable
     public Geometry extractGeometry(ResultSet rs, String columnName) throws SQLException {
-        PGgeometry wkt = (PGgeometry) rs.getObject(columnName);
-        if (wkt != null) {
-            try {
-                StringBuffer sb = new StringBuffer();
-                wkt.getGeometry().outerWKT(sb);
-
-                Geometry geometry = new WKTReader().read(sb.toString());
-                geometry.setSRID(4326);
-                return geometry;
-            } catch (ParseException e) {
-                // ignore
-                LOGGER.error("Cannot parse database geometry", e);
-            }
+        var ewkbHex = rs.getString(columnName);
+        if  (ewkbHex == null) {
+            return null;
         }
 
-        return null;
+        try {
+            var ewkb = HexFormat.of().parseHex(ewkbHex);
+            return new WKBReader(GEOMETRY_FACTORY).read(ewkb);
+        } catch (IllegalArgumentException | ParseException e) {
+            LOGGER.error("Cannot parse database geometry: {}", ewkbHex, e);
+            return null;
+        }
     }
 
     @Override
