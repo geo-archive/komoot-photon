@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import static de.komoot.photon.metrics.MetricsConfig.setupMetrics;
 
@@ -405,7 +404,7 @@ public class App {
 
         photonServer.get("/api", new GenericSearchHandler<>(
                 new SimpleSearchRequestFactory(
-                        Arrays.stream(dbProperties.getLanguages()).collect(Collectors.toList()),
+                        dbProperties.getLanguages(),
                         args.getDefaultLanguage(),
                         args.getMaxResults(),
                         dbProperties.getSupportGeometries()),
@@ -414,7 +413,7 @@ public class App {
 
         photonServer.get("/structured", new GenericSearchHandler<>(
                 new StructuredSearchRequestFactory(
-                        Arrays.stream(dbProperties.getLanguages()).collect(Collectors.toList()),
+                        dbProperties.getLanguages(),
                         args.getDefaultLanguage(),
                         args.getMaxResults(),
                         dbProperties.getSupportGeometries()),
@@ -423,7 +422,7 @@ public class App {
 
         photonServer.get("/reverse", new GenericSearchHandler<>(
                 new ReverseRequestFactory(
-                        Arrays.stream(dbProperties.getLanguages()).collect(Collectors.toList()),
+                        dbProperties.getLanguages(),
                         args.getDefaultLanguage(),
                         args.getMaxReverseResults(),
                         dbProperties.getSupportGeometries()),

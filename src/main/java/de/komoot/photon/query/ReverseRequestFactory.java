@@ -3,7 +3,6 @@ package de.komoot.photon.query;
 import io.javalin.http.Context;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -16,7 +15,7 @@ public class ReverseRequestFactory extends RequestFactoryBase implements Request
                             Stream.of("lat", "lon", "radius", "query_string_filter", "distance_sort"))
                     .collect(Collectors.toSet());
 
-    public ReverseRequestFactory(List<String> supportedLanguages, String defaultLanguage, int maxResults, boolean supportGeometries) {
+    public ReverseRequestFactory(Set<String> supportedLanguages, String defaultLanguage, int maxResults, boolean supportGeometries) {
         super(supportedLanguages, defaultLanguage, maxResults, supportGeometries);
     }
 

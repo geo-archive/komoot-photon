@@ -50,7 +50,7 @@ class JsonReaderTest {
             reader.setExtraTags(configExtraTags);
             reader.setUseFullGeometries(configGeometryColumn);
             reader.setCountryFilter(configCountries);
-            reader.setLanguages(new String[]{"en", "de"});
+            reader.setLanguages(Set.of("en", "de"));
 
             reader.readFile(importThread);
         } finally {

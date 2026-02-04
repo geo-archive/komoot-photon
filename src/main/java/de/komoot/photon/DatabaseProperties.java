@@ -17,9 +17,9 @@ import static de.komoot.photon.Server.DATABASE_VERSION;
 @NullMarked
 public class DatabaseProperties {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final String[] DEFAULT_LANGAUGES = new String[]{"en", "de", "fr", "it"};
+    private static final Set<String> DEFAULT_LANGUAGES = Set.of("en", "de", "fr", "it");
 
-    private String[] languages = DEFAULT_LANGAUGES;
+    private Set<String> languages = DEFAULT_LANGUAGES;
     @Nullable private Date importDate;
     private boolean supportStructuredQueries = true;
     private boolean supportGeometries = false;
@@ -44,9 +44,9 @@ public class DatabaseProperties {
      * Return the list of languages for which the database is configured.
      * If no list was set, then the default is returned.
      *
-     * @return Array of supported languages.
+     * @return Set of supported languages.
      */
-    public String[] getLanguages() {
+    public Set<String> getLanguages() {
         return languages;
     }
 
@@ -57,40 +57,9 @@ public class DatabaseProperties {
      *
      * @return This object for function chaining.
      */
-    public DatabaseProperties setLanguages(String @Nullable[] languages) {
-        this.languages = (languages == null) ? DEFAULT_LANGAUGES : languages;
+    public DatabaseProperties setLanguages(Set<String> languages) {
+        this.languages = languages;
         return this;
-    }
-
-    /**
-     * Set language list to the intersection between the existing list and the given list.
-     * <p>
-     * The final list will use the same order as the given list.
-     *
-     * @param languageList Comma-separated list of two-letter language codes.
-     */
-    public void restrictLanguages(String[] languageList) {
-        if (languages == DEFAULT_LANGAUGES) {
-            // Special case for versions that did not yet have a language list set
-            // in the database: Use the given list as is.
-            languages = languageList;
-        } else {
-            Set<String> currentLanguageSet = new HashSet<>(Arrays.asList(languages));
-            List<String> newLanguageList = new ArrayList<>();
-
-            for (String lang : languageList) {
-                if (currentLanguageSet.contains(lang)) {
-                    newLanguageList.add(lang);
-                }
-            }
-
-            if (newLanguageList.isEmpty()) {
-                throw new UsageException("Language list '" + Arrays.toString(languageList) +
-                        "' not compatible with languages in database(" + Arrays.toString(languages) + ")");
-            }
-
-            languages = newLanguageList.toArray(new String[]{});
-        }
     }
 
     @Nullable
@@ -144,7 +113,7 @@ public class DatabaseProperties {
     @Override
     public String toString() {
         return "DatabaseProperties{" +
-                "languages=" + Arrays.toString(languages) +
+                "languages=" + Arrays.toString(languages.toArray()) +
                 ", importDate=" + importDate +
                 ", supportStructuredQueries=" + supportStructuredQueries +
                 ", supportGeometries=" + supportGeometries +

@@ -2,9 +2,10 @@ package de.komoot.photon;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.util.Date;
+import java.util.Set;
+
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * Tests for the database-global property store.
@@ -18,36 +19,10 @@ class DatabasePropertiesTest {
     void testSetLanguages() {
         var now = new Date();
         DatabaseProperties prop = new DatabaseProperties();
-        prop.setLanguages(new String[]{"en", "bg", "de"});
+        prop.setLanguages(Set.of("en", "bg", "de"));
         prop.setImportDate(now);
 
-        assertArrayEquals(new String[]{"en", "bg", "de"}, prop.getLanguages());
-        assertEquals(now, prop.getImportDate());
+        assertThat(prop.getLanguages()).containsExactlyInAnyOrder("en", "bg", "de");
+        assertThat(prop.getImportDate()).hasSameTimeAs(now);
     }
-
-    /**
-     * If languages is not set, then the restricted language set is used as is.
-     */
-    @Test
-    void testRestrictLanguagesUnsetLanguages() {
-        DatabaseProperties prop = new DatabaseProperties();
-        prop.restrictLanguages(new String[]{"en", "bg", "de"});
-
-        assertArrayEquals(new String[]{"en", "bg", "de"}, prop.getLanguages());
-    }
-
-    /**
-     * When languages are set, then only the languages of the restricted set are used
-     * that already exist and the order of the input is preserved.
-     */
-    @Test
-    void testRestrictLanguagesAlreadySet() {
-        DatabaseProperties prop = new DatabaseProperties();
-        prop.setLanguages(new String[]{"en", "de", "fr"});
-
-        prop.restrictLanguages(new String[]{"cn", "de", "en", "es"});
-
-        assertArrayEquals(new String[]{"de", "en"}, prop.getLanguages());
-    }
-
 }

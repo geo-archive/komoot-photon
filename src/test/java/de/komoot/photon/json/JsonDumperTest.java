@@ -24,6 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static net.javacrumbs.jsonunit.core.Option.IGNORING_EXTRA_FIELDS;
@@ -35,7 +36,7 @@ class JsonDumperTest {
     private JdbcTemplate jdbc;
     private TransactionTemplate txTemplate;
 
-    private final String[] configLanguages = new String[]{"en", "de"};
+    private final Set<String> configLanguages = Set.of("en", "de");
     private List<String> configExtraTags = List.of();
     private String[] configCountries = null;
     private boolean configGeometryColumn = false;
@@ -327,7 +328,7 @@ class JsonDumperTest {
                             "ch", NameMap.makeForPlace(Map.of(
                                     "name", "Schweiz/Suisse",
                                     "name:de", "Schweiz",
-                                    "name:fr", "Suisse"), new String[]{"fr"}),
+                                    "name:fr", "Suisse"), Set.of("fr")),
                             "", new NameMap()));
             dumper.finish();
         } finally {

@@ -7,7 +7,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @NullMarked
 public class ImportFilterConfig {
@@ -36,8 +38,8 @@ public class ImportFilterConfig {
             """)
     private boolean importGeometryColumn = false;
 
-    public String[] getLanguages() {
-        return languages.toArray(String[]::new);
+    public Set<String> getLanguages() {
+        return new HashSet<>(languages);
     }
 
     public String[] getCountryCodes() {
@@ -57,7 +59,7 @@ public class ImportFilterConfig {
     public DatabaseProperties getDatabaseProperties() {
         final var dbProps = new DatabaseProperties();
         if (!languages.isEmpty()) {
-            dbProps.setLanguages(languages.toArray(new String[0]));
+            dbProps.setLanguages(getLanguages());
         }
         dbProps.setSupportGeometries(importGeometryColumn);
 

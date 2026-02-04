@@ -32,7 +32,7 @@ public class JsonReader {
     private boolean useFullGeometries = false;
     private ConfigExtraTags extraTags = new ConfigExtraTags();
     private String @Nullable [] countryFilter = null;
-    private String[] languages = new String[0];
+    private Set<String> languages = Set.of();
 
     public JsonReader(File inputFile) throws IOException {
         parser = configureObjectMapper().createParser(inputFile);
@@ -69,7 +69,7 @@ public class JsonReader {
         }
     }
 
-    public void setLanguages(String[] languages) {
+    public void setLanguages(Set<String> languages) {
         this.languages = languages;
     }
 

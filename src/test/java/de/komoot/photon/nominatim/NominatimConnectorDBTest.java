@@ -56,7 +56,7 @@ class NominatimConnectorDBTest {
     private void setupImporter() {
         DatabaseProperties dbProperties = new DatabaseProperties();
         dbProperties.setSupportGeometries(supportGeometries);
-        dbProperties.setLanguages(new String[]{"en", "de", "fr"});
+        dbProperties.setLanguages(Set.of("en", "de", "fr"));
         connector = new NominatimImporter(new PostgresqlConfig(), new H2DataAdapter(), dbProperties);
         importer = new CollectingImporter();
 

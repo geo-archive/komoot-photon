@@ -28,7 +28,7 @@ public class NominatimAddressCache {
     private final Map<Long, AddressRow> addresses = new HashMap<>();
     private final RowCallbackHandler rowMapper;
 
-    public NominatimAddressCache(DBDataAdapter dbutils, String[] languages) {
+    public NominatimAddressCache(DBDataAdapter dbutils, Set<String> languages) {
         rowMapper = rs -> {
             final var row = AddressRow.make(
                     dbutils.getMap(rs, "name"),

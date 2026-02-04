@@ -254,15 +254,14 @@ public class PhotonDoc {
     /**
      * Complete address data from a map of address terms.
      */
-    public PhotonDoc addAddresses(@Nullable Map<String, String> address, String[] languages) {
+    public PhotonDoc addAddresses(@Nullable Map<String, String> address, Set<String> languages) {
         if (address != null && !address.isEmpty()) {
             addAddresses(address.entrySet(), languages);
         }
         return this;
     }
 
-    public void addAddresses(Iterable<Map.Entry<String, String>> addressEntries, String[] languages) {
-        List<String> langList = Arrays.asList(languages);
+    public void addAddresses(Iterable<Map.Entry<String, String>> addressEntries, Set<String> languages) {
         Map<AddressType, Map<String, String>> overlay = new EnumMap<>(AddressType.class);
         for (var entry : addressEntries) {
             final String key = entry.getKey();
@@ -277,18 +276,18 @@ public class PhotonDoc {
                         .ifPresent(e -> {
                             var atype = e.getKey();
                             if (atype == AddressType.OTHER) {
-                                context.addNameFromPrefix(key, entry.getValue(), langList);
+                                context.addNameFromPrefix(key, entry.getValue(), languages);
                             } else {
                                 int prefixLen = e.getValue().length();
                                 if (key.length() == prefixLen) {
                                     if (overlay.computeIfAbsent(atype, k -> new HashMap<>()).putIfAbsent("default", entry.getValue()) != null) {
-                                        context.addNameFromPrefix(key, entry.getValue(), langList);
+                                        context.addNameFromPrefix(key, entry.getValue(), languages);
                                     }
                                 } else if (key.charAt(prefixLen) == ':') {
                                     final String intKey = key.substring(prefixLen + 1);
-                                    if (langList.contains(intKey)) {
+                                    if (languages.contains(intKey)) {
                                         if (overlay.computeIfAbsent(atype, k -> new HashMap<>()).putIfAbsent(intKey, entry.getValue()) != null) {
-                                            context.addNameFromPrefix(key, entry.getValue(), langList);
+                                            context.addNameFromPrefix(key, entry.getValue(), languages);
                                         }
                                     }
                                 }

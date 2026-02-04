@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -23,12 +24,12 @@ public class PlaceRowMapper implements RowMapper<PhotonDoc> {
             String.format("[%s]+", PhotonDoc.CATEGORY_VALID_CHARS));
 
     private final DBDataAdapter dbutils;
-    private final String[] languages;
+    private final Set<String> languages;
     private final boolean useGeometryColumn;
 
-    public PlaceRowMapper(DBDataAdapter dbutils, String[] langauges, boolean useGeometryColumn) {
+    public PlaceRowMapper(DBDataAdapter dbutils, Set<String> languages, boolean useGeometryColumn) {
         this.dbutils = dbutils;
-        this.languages = langauges;
+        this.languages = languages;
         this.useGeometryColumn = useGeometryColumn;
     }
 

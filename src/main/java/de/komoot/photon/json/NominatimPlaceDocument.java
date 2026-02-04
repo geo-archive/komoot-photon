@@ -35,7 +35,7 @@ public class NominatimPlaceDocument {
     private static final GeometryFactory factory = new GeometryFactory(new PrecisionModel(10000000), 4326);
     private static final GeoJsonReader jsonReader = new GeoJsonReader();
 
-    public PhotonDoc asSimpleDoc(String[] languages) {
+    public PhotonDoc asSimpleDoc(Set<String> languages) {
         if (!names.isEmpty()) {
             doc.names(NameMap.makeForPlace(names, languages));
         }
@@ -46,7 +46,7 @@ public class NominatimPlaceDocument {
         return doc;
     }
 
-    public Iterable<PhotonDoc> asMultiAddressDocs(String @Nullable [] countryFilter, String[] languages) {
+    public Iterable<PhotonDoc> asMultiAddressDocs(String @Nullable [] countryFilter, Set<String> languages) {
         if (!names.isEmpty()) {
             doc.names(NameMap.makeForPlace(names, languages));
         }
@@ -64,7 +64,7 @@ public class NominatimPlaceDocument {
     }
 
     @Nullable
-    public AddressRow asAddressRow(String[] languages) {
+    public AddressRow asAddressRow(Set<String> languages) {
         var addressType = doc.getAddressType();
         if (!names.isEmpty() && addressType != AddressType.HOUSE && addressType != AddressType.OTHER) {
             final var row = AddressRow.make(
