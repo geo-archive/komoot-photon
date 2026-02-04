@@ -11,6 +11,7 @@ import de.komoot.photon.nominatim.testdb.H2DataAdapter;
 import de.komoot.photon.nominatim.testdb.OsmlineTestRow;
 import de.komoot.photon.nominatim.testdb.PlacexTestRow;
 import net.javacrumbs.jsonunit.assertj.JsonMapAssert;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -191,19 +192,20 @@ class JsonDumperTest {
                         .name("name:en", "Ville")
                         .name("name:es", "Lugar")
                         .ranks(14).add(jdbc),
-                new PlacexTestRow("place", "village").name("Dorf").ranks(16).add(jdbc)
+                new PlacexTestRow("place", "village").name("Dorf").ranks(16).add(jdbc),
+                new PlacexTestRow("place", "block").name("84K23").ranks(16).add(jdbc)
         );
 
         var results = readEntireDatabase();
 
-        assertThat(results).hasSize(3);
+        assertThat(results).hasSize(4);
 
         assertThatPlaceDocument(results, place.getPlaceId())
-                .containsEntry("address", Map.of(
-                        "city", "Dorf",
-                        "other1", "Gemeinde",
-                        "other1:en", "Ville"
-                ));
+                .extractingByKey("address", as(InstanceOfAssertFactories.map(String.class, Object.class)))
+                    .containsEntry("city", "Dorf")
+                    .containsEntry("other:en", "Ville")
+                    .extractingByKey("other", as(InstanceOfAssertFactories.list(String.class)))
+                        .containsExactlyInAnyOrder("84K23", "Gemeinde");
     }
 
     @Test

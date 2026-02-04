@@ -141,7 +141,7 @@ public class JsonDumper implements Importer {
             writer.writeStringField(DumpFields.PLACE_HOUSENUMBER, doc.getHouseNumber());
         }
 
-        final Map<String, String> addressNames = new HashMap<>();
+        final Map<String, Object> addressNames = new HashMap<>();
         for (var entry : doc.getAddressParts().entrySet()) {
             final var atype = entry.getKey();
             if (atype != AddressType.COUNTRY) {
@@ -161,17 +161,11 @@ public class JsonDumper implements Importer {
         }
 
         for (var entry : doc.getContext().entrySet()) {
-            int i = 1;
-            if ("default".equals(entry.getKey())) {
-                for (var name : entry.getValue()) {
-                    addressNames.put(String.format("other%d", i), name);
-                    ++i;
-                }
+            String key = "default".equals(entry.getKey()) ? "other" : String.format("other:%s", entry.getKey());
+            if (entry.getValue().size() == 1) {
+                addressNames.put(key, entry.getValue().iterator().next());
             } else {
-                for (var name : entry.getValue()) {
-                    addressNames.put(String.format("other%d:%s", i, entry.getKey()), name);
-                    ++i;
-                }
+                addressNames.put(key, entry.getValue());
             }
         }
 
