@@ -9,6 +9,18 @@ import java.util.*;
 public class ContextMap extends AbstractMap<String, Set<String>> {
     private final Map<String, Set<String>> entries = new HashMap<>();
 
+    public void addNameFromPrefix(String fullKey, @Nullable String name, @Nullable List<String> languageList) {
+        if (name != null) {
+            final String[] parts = fullKey.split(":", 0);
+            final String intKey = parts[parts.length - 1];
+            if (parts.length == 1) {
+                addName("default", name);
+            } else if (languageList == null || languageList.contains(intKey)) {
+                addName(intKey, name);
+            }
+        }
+    }
+
     public void addName(String key, @Nullable String name) {
         if (name != null) {
             entries.computeIfAbsent(key, k -> new HashSet<>()).add(name);

@@ -28,7 +28,7 @@ public class NominatimPlaceDocument {
     private static final Pattern PLACEID_PATTERN = Pattern.compile("[0-9a-zA-Z_-]{1,60}");
 
     private final PhotonDoc doc = new PhotonDoc();
-    private Map<String, String> address = Map.of();
+    @Nullable private AddressMap address = null;
     private Map<String, String> names = Map.of();
     private AddressLine @Nullable [] addressLines = null;
 
@@ -40,7 +40,9 @@ public class NominatimPlaceDocument {
             doc.names(NameMap.makeForPlace(names, languages));
         }
 
-        doc.addAddresses(address, languages);
+        if (address != null) {
+            doc.addAddresses(address.get(), languages);
+        }
         return doc;
     }
 
@@ -54,8 +56,11 @@ public class NominatimPlaceDocument {
             return List.of();
         }
 
-        doc.addAddresses(address, languages);
-        return new PhotonDocAddressSet(doc, address);
+        if (address != null) {
+            doc.addAddresses(address.get(), languages);
+        }
+
+        return new PhotonDocAddressSet(doc, address == null ? Map.of() : address.getMainAddress());
     }
 
     @Nullable
@@ -182,7 +187,7 @@ public class NominatimPlaceDocument {
     }
 
     @JsonProperty(DumpFields.PLACE_ADDRESS)
-    void setAddress(@Nullable Map<String, String> address) {
+    void setAddress(@Nullable AddressMap address) {
         if (address != null) {
             this.address = address;
         }
