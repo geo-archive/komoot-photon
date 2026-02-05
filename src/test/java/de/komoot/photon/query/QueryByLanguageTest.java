@@ -16,20 +16,19 @@ import static org.assertj.core.api.Assertions.*;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Tests for queries in different languages.
  */
 class QueryByLanguageTest extends ESBaseTester {
     private int testDocId = 10001;
-    private String[] languageList;
 
     @TempDir
     private Path dataDirectory;
 
     private Importer setup(String... languages) throws IOException {
-        languageList = languages;
-        getProperties().setLanguages(languages);
+        getProperties().setLanguages(Arrays.stream(languages).collect(Collectors.toSet()));
         setUpES(dataDirectory);
         return makeImporter();
     }

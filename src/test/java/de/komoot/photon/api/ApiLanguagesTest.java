@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
@@ -30,7 +31,7 @@ class ApiLanguagesTest extends ApiBaseTester {
     }
 
     private void importPlaces(String... languages) throws Exception {
-        getProperties().setLanguages(languages);
+        getProperties().setLanguages(Arrays.stream(languages).collect(Collectors.toSet()));
         setUpES(dataDirectory);
         Importer instance = makeImporter();
         instance.add(List.of(createDoc(1000, "city",

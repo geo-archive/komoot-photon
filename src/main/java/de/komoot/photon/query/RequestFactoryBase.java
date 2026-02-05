@@ -21,12 +21,12 @@ public class RequestFactoryBase {
     private static final List<String> AVAILABLE_LAYERS = AddressType.getNames();
     private static final GeometryFactory GEOMETRY_FACTORY = new GeometryFactory(new PrecisionModel(), 4326);
 
-    private final List<String> supportedLanguages;
+    private final Set<String> supportedLanguages;
     private final String defaultLangauge;
     private final int maxResults;
     private final boolean supportGeometries;
 
-    protected RequestFactoryBase(List<String> supportedLanguages, String defaultLanguage, int maxResults, boolean supportGeometries) {
+    protected RequestFactoryBase(Set<String> supportedLanguages, String defaultLanguage, int maxResults, boolean supportGeometries) {
         this.supportedLanguages = supportedLanguages;
         this.defaultLangauge = defaultLanguage;
         this.maxResults = maxResults;

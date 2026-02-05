@@ -254,14 +254,16 @@ public class PhotonDoc {
     /**
      * Complete address data from a map of address terms.
      */
-    public PhotonDoc addAddresses(@Nullable Map<String, String> address, String[] languages) {
-        if (address == null || address.isEmpty()) {
-            return this;
+    public PhotonDoc addAddresses(@Nullable Map<String, String> address, Set<String> languages) {
+        if (address != null && !address.isEmpty()) {
+            addAddresses(address.entrySet(), languages);
         }
+        return this;
+    }
 
-        List<String> langList = Arrays.asList(languages);
+    public void addAddresses(Iterable<Map.Entry<String, String>> addressEntries, Set<String> languages) {
         Map<AddressType, Map<String, String>> overlay = new EnumMap<>(AddressType.class);
-        for (var entry : address.entrySet()) {
+        for (var entry : addressEntries) {
             final String key = entry.getKey();
 
             if (key.equals("postcode")) {
@@ -274,21 +276,19 @@ public class PhotonDoc {
                         .ifPresent(e -> {
                             var atype = e.getKey();
                             if (atype == AddressType.OTHER) {
-                                final String[] parts = key.split(":", 0);
-                                final String intKey = parts[parts.length - 1];
-                                if (parts.length == 1) {
-                                    context.addName("default", entry.getValue());
-                                } else if (langList.contains(intKey)) {
-                                    context.addName(intKey, entry.getValue());
-                                }
+                                context.addNameFromPrefix(key, entry.getValue(), languages);
                             } else {
                                 int prefixLen = e.getValue().length();
                                 if (key.length() == prefixLen) {
-                                    overlay.computeIfAbsent(atype, k -> new HashMap<>()).put("default", entry.getValue());
+                                    if (overlay.computeIfAbsent(atype, k -> new HashMap<>()).putIfAbsent("default", entry.getValue()) != null) {
+                                        context.addNameFromPrefix(key, entry.getValue(), languages);
+                                    }
                                 } else if (key.charAt(prefixLen) == ':') {
                                     final String intKey = key.substring(prefixLen + 1);
-                                    if (langList.contains(intKey)) {
-                                        overlay.computeIfAbsent(atype, k -> new HashMap<>()).put(intKey, entry.getValue());
+                                    if (languages.contains(intKey)) {
+                                        if (overlay.computeIfAbsent(atype, k -> new HashMap<>()).putIfAbsent(intKey, entry.getValue()) != null) {
+                                            context.addNameFromPrefix(key, entry.getValue(), languages);
+                                        }
                                     }
                                 }
                             }
@@ -313,8 +313,6 @@ public class PhotonDoc {
                 addressParts.put(atype, newMap);
             }
         }
-
-        return this;
     }
 
     public void setCountry(@Nullable Map<String, String> names) {

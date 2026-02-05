@@ -12,10 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Base class for workers connecting to a Nominatim database
@@ -59,7 +56,7 @@ public class NominatimConnector {
         return importDates.isEmpty() ? null : importDates.getFirst();
     }
 
-    public Map<String, NameMap> loadCountryNames(String[] languages) {
+    public Map<String, NameMap> loadCountryNames(Set<String> languages) {
         if (countryNames == null) {
             countryNames = new HashMap<>();
             // Default for places outside any country.

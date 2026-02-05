@@ -4,6 +4,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Representation of an address as returned by Nominatim's get_addressdata PL/pgSQL function.
@@ -23,7 +24,7 @@ public class AddressRow {
     }
 
     public static AddressRow make(Map<String, String> name, String osmKey, String osmValue,
-                                  AddressType addressType, String[] languages) {
+                                  AddressType addressType, Set<String> languages) {
         ContextMap context = new ContextMap();
 
         if (("place".equals(osmKey) && "postcode".equals(osmValue))

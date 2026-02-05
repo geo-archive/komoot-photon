@@ -50,7 +50,7 @@ class JsonReaderTest {
             reader.setExtraTags(configExtraTags);
             reader.setUseFullGeometries(configGeometryColumn);
             reader.setCountryFilter(configCountries);
-            reader.setLanguages(new String[]{"en", "de"});
+            reader.setLanguages(Set.of("en", "de"));
 
             reader.readFile(importThread);
         } finally {
@@ -247,10 +247,20 @@ class JsonReaderTest {
                                 Map.of("default", "Vaduz", "de", "VaduzD")));
     }
 
-    @Test
-    void testAddressFromAddressField() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            """
+            {"city": "Vaduz", "city:de": "VaduzD", "city:hu": "VaduzHU", "other1": "This", "other2": "That", "other1:de": "Dies", "other2:de": "Das", "other3": null}""",
+            """
+            {"city": "Vaduz", "city:de": "VaduzD", "city:hu": "VaduzHU", "other": ["This", "That"], "other:de": ["Dies", "Das", 1, null, {}], "other:hu": {"name": "foo"}}""",
+            """
+            {"city": ["Vaduz", "This", "That"], "city:de": ["VaduzD", "Dies", "Das"], "city:hu": "VaduzHU"}"""
+    })
+    void testAddressFromAddressField(String addressString) throws IOException {
         input.println("""
-                {"type":"Place","content":{"place_id" : 105764, "object_type" : "N", "object_id" : 4637485890, "categories" : ["osm.amenity.theatre"], "rank_address" : 30, "rank_search" : 30, "importance" : 9.99999999995449e-06,"parent_place_id":106180,"name":{"name": "Kleintheater Schlösslekeller"},"address":{"city": "Vaduz", "city:de": "VaduzD", "city:hu": "VaduzHU", "other1": "This", "other2": "That", "other1:de": "Dies", "other2:de": "Das", "other3": null},"postcode":"9490","country_code":"li","addresslines":[{"place_id":106180,"rank_address":26,"isaddress":true},{"place_id":105903,"rank_address":16,"isaddress":true}, {"place_id":106289,"rank_address":12,"isaddress":true}],"centroid":[9.52394930,47.12904370]}}""");
+                {"type":"Place","content":{"place_id" : 105764, "object_type" : "N", "object_id" : 4637485890, "categories" : ["osm.amenity.theatre"], "rank_address" : 30, "rank_search" : 30, "importance" : 9.99999999995449e-06,"parent_place_id":106180,"name":{"name": "Kleintheater Schlösslekeller"},"address":"""
+                + addressString + """
+                ,"postcode":"9490","country_code":"li","addresslines":[{"place_id":106180,"rank_address":26,"isaddress":true},{"place_id":105903,"rank_address":16,"isaddress":true}, {"place_id":106289,"rank_address":12,"isaddress":true}],"centroid":[9.52394930,47.12904370]}}""");
 
         var importer = readJson();
 

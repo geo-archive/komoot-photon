@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
@@ -52,7 +53,7 @@ class PhotonDocAddressSetTest {
     @Test
     void testEmptyAddressUsefulDocument() {
         assertThat(new PhotonDocAddressSet(
-                baseDoc.names(NameMap.makeForPlace(Map.of("name", "foo"), new String[]{})),
+                baseDoc.names(NameMap.makeForPlace(Map.of("name", "foo"), Set.of())),
                 Map.of()))
                 .satisfiesExactly(
                         d -> assertThat(d).isSameAs(baseDoc)

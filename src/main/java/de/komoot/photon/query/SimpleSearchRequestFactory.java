@@ -3,7 +3,6 @@ package de.komoot.photon.query;
 import io.javalin.http.Context;
 import org.jspecify.annotations.NullMarked;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -14,7 +13,7 @@ public class SimpleSearchRequestFactory extends SearchRequestFactoryBase impleme
             Stream.concat(SEARCH_PARAMETERS.stream(), Stream.of("q"))
                     .collect(Collectors.toSet());
 
-    public SimpleSearchRequestFactory(List<String> supportedLanguages, String defaultLanguage, int maxResults, boolean supportGeometries) {
+    public SimpleSearchRequestFactory(Set<String> supportedLanguages, String defaultLanguage, int maxResults, boolean supportGeometries) {
         super(supportedLanguages, defaultLanguage, maxResults, supportGeometries);
     }
 

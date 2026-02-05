@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -29,7 +30,7 @@ class ApiLanguageSelectionTest extends ApiBaseTester {
 
     @BeforeAll
     void setUp(@TempDir Path dataDirectory) throws Exception {
-        getProperties().setLanguages(new String[]{"en", "de", "it"});
+        getProperties().setLanguages(Set.of("en", "de", "it"));
         setUpES(dataDirectory);
         Importer instance = makeImporter();
 

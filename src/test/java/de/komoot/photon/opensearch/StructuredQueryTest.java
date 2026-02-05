@@ -13,6 +13,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,7 +31,7 @@ public class StructuredQueryTest extends ESBaseTester {
 
     @BeforeAll
     void setUp(@TempDir Path dataDirectory) throws Exception {
-        getProperties().setLanguages(new String[]{LANGUAGE, "de", "fr"});
+        getProperties().setLanguages(Set.of(LANGUAGE, "de", "fr"));
         setUpES(dataDirectory);
         Importer instance = makeImporter();
 

@@ -18,7 +18,7 @@ public class StructuredSearchRequestFactory extends SearchRequestFactoryBase imp
                     .collect(Collectors.toSet());
 
 
-    public StructuredSearchRequestFactory(List<String> supportedLanguages, String defaultLanguage, int maxResults, boolean supportGeometries) {
+    public StructuredSearchRequestFactory(Set<String> supportedLanguages, String defaultLanguage, int maxResults, boolean supportGeometries) {
         super(supportedLanguages, defaultLanguage, maxResults, supportGeometries);
     }
 

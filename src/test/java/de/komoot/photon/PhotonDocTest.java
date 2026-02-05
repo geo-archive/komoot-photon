@@ -4,6 +4,7 @@ import de.komoot.photon.nominatim.model.AddressType;
 import org.junit.jupiter.api.Test;
 
 import java.util.Map;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -18,7 +19,7 @@ class PhotonDocTest {
         PhotonDoc doc = simplePhotonDoc();
         
         doc.setAddressPartIfNew(AddressType.STREET, Map.of("name", "parent place street"));
-        doc.addAddresses(Map.of("street", "test street"), new String[]{"de"});
+        doc.addAddresses(Map.of("street", "test street"), Set.of("de"));
 
         assertThat(doc.getAddressParts().get(AddressType.STREET))
                 .containsEntry("default", "test street");
@@ -28,7 +29,7 @@ class PhotonDocTest {
     void testCompleteAddressCreatesStreetIfNonExistantBefore() {
         PhotonDoc doc = simplePhotonDoc();
 
-        doc.addAddresses(Map.of("street", "test street"), new String[]{"de"});
+        doc.addAddresses(Map.of("street", "test street"), Set.of("de"));
 
         assertThat(doc.getAddressParts().get(AddressType.STREET))
                 .containsEntry("default", "test street");

@@ -11,6 +11,7 @@ import de.komoot.photon.nominatim.testdb.H2DataAdapter;
 import de.komoot.photon.nominatim.testdb.OsmlineTestRow;
 import de.komoot.photon.nominatim.testdb.PlacexTestRow;
 import net.javacrumbs.jsonunit.assertj.JsonMapAssert;
+import org.assertj.core.api.InstanceOfAssertFactories;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,6 +24,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static net.javacrumbs.jsonunit.core.Option.IGNORING_EXTRA_FIELDS;
@@ -34,7 +36,7 @@ class JsonDumperTest {
     private JdbcTemplate jdbc;
     private TransactionTemplate txTemplate;
 
-    private final String[] configLanguages = new String[]{"en", "de"};
+    private final Set<String> configLanguages = Set.of("en", "de");
     private List<String> configExtraTags = List.of();
     private String[] configCountries = null;
     private boolean configGeometryColumn = false;
@@ -191,19 +193,20 @@ class JsonDumperTest {
                         .name("name:en", "Ville")
                         .name("name:es", "Lugar")
                         .ranks(14).add(jdbc),
-                new PlacexTestRow("place", "village").name("Dorf").ranks(16).add(jdbc)
+                new PlacexTestRow("place", "village").name("Dorf").ranks(16).add(jdbc),
+                new PlacexTestRow("place", "block").name("84K23").ranks(16).add(jdbc)
         );
 
         var results = readEntireDatabase();
 
-        assertThat(results).hasSize(3);
+        assertThat(results).hasSize(4);
 
         assertThatPlaceDocument(results, place.getPlaceId())
-                .containsEntry("address", Map.of(
-                        "city", "Dorf",
-                        "other1", "Gemeinde",
-                        "other1:en", "Ville"
-                ));
+                .extractingByKey("address", as(InstanceOfAssertFactories.map(String.class, Object.class)))
+                    .containsEntry("city", "Dorf")
+                    .containsEntry("other:en", "Ville")
+                    .extractingByKey("other", as(InstanceOfAssertFactories.list(String.class)))
+                        .containsExactlyInAnyOrder("84K23", "Gemeinde");
     }
 
     @Test
@@ -325,7 +328,7 @@ class JsonDumperTest {
                             "ch", NameMap.makeForPlace(Map.of(
                                     "name", "Schweiz/Suisse",
                                     "name:de", "Schweiz",
-                                    "name:fr", "Suisse"), new String[]{"fr"}),
+                                    "name:fr", "Suisse"), Set.of("fr")),
                             "", new NameMap()));
             dumper.finish();
         } finally {

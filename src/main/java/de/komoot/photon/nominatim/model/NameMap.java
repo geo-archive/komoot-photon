@@ -14,7 +14,7 @@ public class NameMap extends AbstractMap<String, String> {
         return entries;
     }
 
-    public static NameMap makeForPlace(Map<String, @Nullable String> source, String[] languages) {
+    public static NameMap makeForPlace(Map<String, @Nullable String> source, Iterable<String> languages) {
         return new NameMap()
                 .setLocaleNames(source, languages)
                 .setName("alt", source, "_place_alt_name", "alt_name")
@@ -25,7 +25,7 @@ public class NameMap extends AbstractMap<String, String> {
                 .setName("housename", source,"addr:housename");
     }
 
-    NameMap setLocaleNames(Map<String, @Nullable String> source, String[] languages) {
+    NameMap setLocaleNames(Map<String, @Nullable String> source, Iterable<String> languages) {
         setName("default", source, "_place_name", "name");
         for (var lang : languages) {
             setName(lang, source, "_place_name:" + lang, "name:" + lang);

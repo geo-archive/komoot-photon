@@ -16,7 +16,7 @@ public class SearchRequestFactoryBase extends RequestFactoryBase {
                             Stream.of("lat", "lon", "location_bias_scale", "zoom", "bbox", "suggest_addresses"))
                     .collect(Collectors.toSet());
 
-    protected SearchRequestFactoryBase(List<String> supportedLanguages, String defaultLanguage, int maxResults, boolean supportGeometries) {
+    protected SearchRequestFactoryBase(Set<String> supportedLanguages, String defaultLanguage, int maxResults, boolean supportGeometries) {
         super(supportedLanguages, defaultLanguage, maxResults, supportGeometries);
     }
 

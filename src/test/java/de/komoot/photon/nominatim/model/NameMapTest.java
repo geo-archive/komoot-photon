@@ -5,6 +5,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.*;
@@ -15,7 +16,7 @@ public class NameMapTest {
     @ParameterizedTest
     @MethodSource("validPlaceNameProvider")
     void testPlaceName(Map<String, String> input, Map<String, String> output) {
-        assertThat(NameMap.makeForPlace(input, new String[]{"en", "it"}))
+        assertThat(NameMap.makeForPlace(input, Set.of("en", "it")))
                 .isEqualTo(output);
     }
 
