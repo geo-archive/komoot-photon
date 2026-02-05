@@ -4,7 +4,6 @@ import io.javalin.http.Context;
 import org.jspecify.annotations.NullMarked;
 import org.locationtech.jts.geom.Envelope;
 
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

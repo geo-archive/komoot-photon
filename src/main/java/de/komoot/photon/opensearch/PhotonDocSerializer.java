@@ -12,7 +12,6 @@ import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 @NullMarked
@@ -72,8 +71,7 @@ public class PhotonDocSerializer extends StdSerializer<PhotonDoc> {
             for (var entry : value.getName().entrySet()) {
                 final var key = entry.getKey();
                 final var name = entry.getValue();
-                final boolean isPrimaryName = "default".equals(key)
-                    || Arrays.asList(dbProperties.getLanguages()).contains(key);
+                final boolean isPrimaryName = "default".equals(key) || dbProperties.getLanguages().contains(key);
                 termCollector.add(name, isPrimaryName ? 5 : 2);
                 nameCollector.add(name, isPrimaryName ? 2 : 1);
             }
