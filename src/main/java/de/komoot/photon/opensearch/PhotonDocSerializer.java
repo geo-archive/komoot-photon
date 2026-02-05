@@ -37,7 +37,7 @@ public class PhotonDocSerializer extends StdSerializer<PhotonDoc> {
         gen.writeStringField(DocFields.OSM_TYPE, value.getOsmType());
         gen.writeStringField(DocFields.OSM_KEY, value.getTagKey());
         gen.writeStringField(DocFields.OSM_VALUE, value.getTagValue());
-        gen.writeStringField(DocFields.OBJECT_TYPE, atype == null ? "locality" : atype.getName());
+        gen.writeStringField(DocFields.OBJECT_TYPE, atype.getName());
         gen.writeNumberField(DocFields.IMPORTANCE, value.getImportance());
 
         if (value.getCentroid() != null) {
