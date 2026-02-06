@@ -54,7 +54,8 @@ public class PhotonCli {
                                 cmdline.getGeneralConfig(),
                                 cmdline.getPhotonDBConfig(),
                                 cmdline.getApiServerConfig(),
-                                cmdline.getPostgresqlConfig()))
+                                cmdline.getPostgresqlConfig(),
+                                cmdline.getImportFilterConfig()))
                 .programName("photon")
                 .build();
         jCommander.setUsageFormatter(new PhotonUsageFormatter(jCommander));
