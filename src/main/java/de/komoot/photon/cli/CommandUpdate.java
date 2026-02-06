@@ -23,10 +23,9 @@ import de.komoot.photon.config.*;
         update endpoint and trigger updates through the API.
         """)
 public class CommandUpdate {
-    public CommandUpdate(GeneralConfig gCfg, ImportFileConfig ifCfg,
+    public CommandUpdate(GeneralConfig gCfg,
                          PostgresqlConfig pgCfg, PhotonDBConfig dbCfg, ImportFilterConfig filtCfg) {
         generalConfig = gCfg;
-        importFileConfig = ifCfg;
         postgresqlConfig = pgCfg;
         photonDBConfig = dbCfg;
         importFilterConfig = filtCfg;
@@ -34,9 +33,6 @@ public class CommandUpdate {
 
     @ParametersDelegate
     private final GeneralConfig generalConfig;
-
-    @ParametersDelegate
-    private final ImportFileConfig importFileConfig;
 
     @ParametersDelegate
     private final PostgresqlConfig postgresqlConfig;

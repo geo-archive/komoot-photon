@@ -32,7 +32,6 @@ public class PhotonCli {
                         Commands.CMD_UPDATE.getCmd(),
                         new CommandUpdate(
                                 cmdline.getGeneralConfig(),
-                                cmdline.getImportFileConfig(),
                                 cmdline.getPostgresqlConfig(),
                                 cmdline.getPhotonDBConfig(),
                                 cmdline.getImportFilterConfig()))
