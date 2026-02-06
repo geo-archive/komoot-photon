@@ -35,7 +35,7 @@ public class ApiServerConfig {
 
     @Parameter(names = "-enable-update-api", category = GROUP, description = """
             Enable the additional endpoint /nominatim-update, which allows to trigger updates
-            from a nominatim database; make sure to also set te PostgreSQL connection parameters
+            from a nominatim database; make sure to also set the PostgreSQL connection parameters
             """)
     private boolean enableUpdateApi = false;
 
