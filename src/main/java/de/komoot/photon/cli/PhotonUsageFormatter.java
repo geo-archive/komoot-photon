@@ -15,12 +15,12 @@ import static java.lang.Boolean.FALSE;
 public class PhotonUsageFormatter implements IUsageFormatter {
     private static final String[] OPTION_GROUPS = {
             GeneralConfig.GROUP,
+            PhotonDBConfig.GROUP,
             ApiServerConfig.GROUP,
             ImportFileConfig.GROUP,
             UpdateInitConfig.GROUP,
-            PostgresqlConfig.GROUP,
             ExportDumpConfig.GROUP,
-            PhotonDBConfig.GROUP,
+            PostgresqlConfig.GROUP,
             ImportFilterConfig.GROUP
     };
     private static final String PHOTON_GENERAL_PREAMBLE = """
