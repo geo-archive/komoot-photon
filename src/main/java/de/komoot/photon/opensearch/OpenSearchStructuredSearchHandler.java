@@ -14,7 +14,7 @@ import java.util.List;
 import java.io.IOException;
 
 /**
- * Execute a structured forward lookup on an Elasticsearch database.
+ * Execute a structured forward lookup.
  */
 @NullMarked
 public class OpenSearchStructuredSearchHandler implements SearchHandler<StructuredSearchRequest> {

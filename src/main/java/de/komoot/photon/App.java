@@ -285,7 +285,7 @@ public class App {
             dbProperties.setImportDate(importDate);
             esServer.saveToDatabase(dbProperties);
         } catch (IOException e) {
-            throw new UsageException("Cannot setup index, elastic search config files not readable");
+            throw new UsageException("Cannot setup index, database config files not readable");
         }
     }
 
