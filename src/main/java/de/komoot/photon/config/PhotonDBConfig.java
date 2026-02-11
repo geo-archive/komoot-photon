@@ -26,7 +26,7 @@ public class PhotonDBConfig {
     private String dataDirectory = new File(".").getAbsolutePath();
 
     @Parameter(names = "-transport-addresses", category = GROUP, placeholder = "ADDR,..", description = """
-            Comma-separated list of addresses of external ElasticSearch nodes the client can connect to;
+            Comma-separated list of addresses of external OpenSearch nodes the client can connect to;
             when left empty, then an internal server is started and used
             """)
     private List<String> transportAddresses = new ArrayList<>();
