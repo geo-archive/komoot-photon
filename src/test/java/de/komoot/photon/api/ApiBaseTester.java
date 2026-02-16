@@ -13,7 +13,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThatIOException;
+import static org.assertj.core.api.Assertions.*;
 
 public class ApiBaseTester extends ESBaseTester {
     private static final int LISTEN_PORT = 30234;
@@ -49,10 +49,12 @@ public class ApiBaseTester extends ESBaseTester {
                 .lines().collect(Collectors.joining("\n"));
     }
 
-    protected void assertHttpError(String url, int expectedCode) {
-        assertThatIOException()
-                .isThrownBy(() -> readURL(url))
-                .withMessageContaining("response code: " + expectedCode);
-
+    protected void assertHttpResponseCode(String url, int expectedCode) {
+        try {
+            assertThat(connect(url))
+                    .hasFieldOrPropertyWithValue("responseCode", expectedCode);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -17,7 +17,6 @@ import java.util.Date;
 import java.util.List;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * API tests that check queries against an already running ES instance and
@@ -77,7 +76,7 @@ class ApiIntegrationTest extends ApiBaseTester {
     @ParameterizedTest
     @FieldSource("BASE_URLS")
     void testBogus(String baseUrl) {
-        assertHttpError(baseUrl + "&bogus=thing", 400);
+        assertHttpResponseCode(baseUrl + "&bogus=thing", 400);
     }
 
     @ParameterizedTest
@@ -167,7 +166,7 @@ class ApiIntegrationTest extends ApiBaseTester {
     @ParameterizedTest
     @FieldSource("BASE_URLS")
     void testBadLimitParameter(String baseUrl) {
-        assertHttpError(baseUrl + "&limit=NaN", 400);
+        assertHttpResponseCode(baseUrl + "&limit=NaN", 400);
     }
 
     @ParameterizedTest
@@ -198,7 +197,7 @@ class ApiIntegrationTest extends ApiBaseTester {
     @ParameterizedTest
     @FieldSource("BASE_URLS")
     void testBadLayerParameter(String baseUrl) {
-        assertHttpError(baseUrl + "&layer=locality&layer=suburb", 400);
+        assertHttpResponseCode(baseUrl + "&layer=locality&layer=suburb", 400);
     }
 
     @ParameterizedTest
@@ -265,7 +264,7 @@ class ApiIntegrationTest extends ApiBaseTester {
     @ParameterizedTest
     @FieldSource("BASE_URLS")
     void testBadOsmTagParameter(String baseUrl) {
-        assertHttpError(baseUrl + "&osm_tag=bad:bad:bad", 400);
+        assertHttpResponseCode(baseUrl + "&osm_tag=bad:bad:bad", 400);
     }
 
     @ParameterizedTest
@@ -291,7 +290,7 @@ class ApiIntegrationTest extends ApiBaseTester {
     @ParameterizedTest
     @ValueSource(strings = {"4+5.6", "abc", "ab..23", "a.b,c", "a.b,!c.d"})
     void testCategoryBadValues(String paramValue) {
-        assertHttpError("/api?q=berlin&include=" + paramValue, 400);
+        assertHttpResponseCode("/api?q=berlin&include=" + paramValue, 400);
     }
 
     @ParameterizedTest
@@ -306,18 +305,18 @@ class ApiIntegrationTest extends ApiBaseTester {
             "lat=52.54714&lon=-180.01", "lat=-90.01&lon=13.39026"
     })
     void testReverseBadLocation(String param) {
-        assertHttpError("/reverse?" + param, 400);
+        assertHttpResponseCode("/reverse?" + param, 400);
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"bad", "NaN", "0.0", "-10.0"})
     void testReverseBadRadius(String param) {
-        assertHttpError("/reverse?lat=52.54714&lon=13.39026&radius=" + param, 400);
+        assertHttpResponseCode("/reverse?lat=52.54714&lon=13.39026&radius=" + param, 400);
     }
 
     @Test
     void testSearchMissingQuery() {
-        assertHttpError("/api?debug=1", 400);
+        assertHttpResponseCode("/api?debug=1", 400);
     }
 
     @Test
@@ -341,7 +340,7 @@ class ApiIntegrationTest extends ApiBaseTester {
             "lat=52.54714&lon=-180.01", "lat=-90.01&lon=13.39026"
     })
     void testSearchBadLocation(String param) {
-        assertHttpError("/api?q=berlin&" + param, 400);
+        assertHttpResponseCode("/api?q=berlin&" + param, 400);
     }
 
     @ParameterizedTest
@@ -352,18 +351,18 @@ class ApiIntegrationTest extends ApiBaseTester {
             "-181, 9, 4, 12", "12, 9, 181, 12"
     })
     void testSearchBadBbox(String param) {
-        assertHttpError("/api?q=berlin&bbox=" + param, 400);
+        assertHttpResponseCode("/api?q=berlin&bbox=" + param, 400);
     }
 
 
     @ParameterizedTest
     @ValueSource(strings = {"bad", "NaN"})
     void testSearchBadLocationBiasScale(String param) {
-        assertHttpError("/api?q=berlin&lat=52.54714&lon=13.39026&location_bias_scale=" + param, 400);
+        assertHttpResponseCode("/api?q=berlin&lat=52.54714&lon=13.39026&location_bias_scale=" + param, 400);
     }
 
     @Test
-    void testMetricsEndpoint() throws IOException {
-        assertEquals(200, connect("/metrics").getResponseCode());
+    void testMetricsEndpoint() {
+        assertHttpResponseCode("/metrics", 200);
     }
 }
