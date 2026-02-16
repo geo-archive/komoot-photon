@@ -402,23 +402,25 @@ public class App {
 
         photonServer.get("/status", new StatusRequestHandler(server));
 
-        photonServer.get("/api", new GenericSearchHandler<>(
-                new SimpleSearchRequestFactory(
-                        dbProperties.getLanguages(),
-                        args.getDefaultLanguage(),
-                        args.getMaxResults(),
-                        dbProperties.getSupportGeometries()),
-                server.createSearchHandler(args.getQueryTimeout()),
-                formatter));
+        if (!dbProperties.getReverseOnly()) {
+           photonServer.get("/api", new GenericSearchHandler<>(
+                    new SimpleSearchRequestFactory(
+                            dbProperties.getLanguages(),
+                            args.getDefaultLanguage(),
+                            args.getMaxResults(),
+                            dbProperties.getSupportGeometries()),
+                    server.createSearchHandler(args.getQueryTimeout()),
+                    formatter));
 
-        photonServer.get("/structured", new GenericSearchHandler<>(
-                new StructuredSearchRequestFactory(
-                        dbProperties.getLanguages(),
-                        args.getDefaultLanguage(),
-                        args.getMaxResults(),
-                        dbProperties.getSupportGeometries()),
-                server.createStructuredSearchHandler(args.getQueryTimeout()),
-                formatter));
+            photonServer.get("/structured", new GenericSearchHandler<>(
+                    new StructuredSearchRequestFactory(
+                            dbProperties.getLanguages(),
+                            args.getDefaultLanguage(),
+                            args.getMaxResults(),
+                            dbProperties.getSupportGeometries()),
+                    server.createStructuredSearchHandler(args.getQueryTimeout()),
+                    formatter));
+        }
 
         photonServer.get("/reverse", new GenericSearchHandler<>(
                 new ReverseRequestFactory(

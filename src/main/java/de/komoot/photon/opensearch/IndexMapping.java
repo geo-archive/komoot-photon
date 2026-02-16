@@ -17,15 +17,15 @@ public class IndexMapping {
 
     private PutMappingRequest.Builder mappings;
 
-    public IndexMapping() {
-        setupBaseMappings();
+    public IndexMapping(boolean reverseOnly) {
+        setupBaseMappings(reverseOnly);
     }
 
     public void putMapping(OpenSearchClient client, String indexName) throws IOException {
         client.indices().putMapping(mappings.index(indexName).build());
     }
 
-    private void setupBaseMappings() {
+    private void setupBaseMappings(boolean reverseOnly) {
         mappings = new PutMappingRequest.Builder();
 
         mappings.dynamic(DynamicMapping.False)
@@ -50,86 +50,89 @@ public class IndexMapping {
         ));
 
         mappings.properties(DocFields.COORDINATE, b -> b.geoPoint(p -> p));
-        mappings.properties(DocFields.COUNTRYCODE, b -> b.keyword(p -> p
-                .index(true)
-                .docValues(false)
-        ));
         mappings.properties(DocFields.IMPORTANCE, b -> b.float_(p -> p
                 .index(false)
         ));
 
-        mappings.properties(DocFields.HOUSENUMBER, b -> b.text(p -> p
-                .index(true)
-                .indexOptions(IndexOptions.Docs)
-                .analyzer("index_housenumber")
-                .searchAnalyzer("standard")
-                .fields("full", f -> f.text(full -> full
-                        .index(true)
-                        .norms(false)
-                        .indexOptions(IndexOptions.Docs)
-                        .analyzer("lowercase_keyword")
-                ))
-        ));
-
-        mappings.properties(DocFields.POSTCODE, b -> b.text(p -> p
-                .index(true)
-                .norms(false)
-                .analyzer("index_raw")
-        ));
-
-        // General collectors.
-        mappings.properties(DocFields.COLLECTOR + ".all", b -> b.text(p -> p
-                .index(true)
-                .norms(false)
-                .indexOptions(IndexOptions.Freqs)
-                .analyzer("index_fullword")
-                .searchAnalyzer("search")
-                .fields("ngram", ngramField -> ngramField.text(p1 -> p1
-                        .index(true)
-                        .norms(false)
-                        .indexOptions(IndexOptions.Freqs)
-                        .analyzer("index_ngram")
-                        .searchAnalyzer("search")
-                ))
-        ));
-
-        mappings.properties(DocFields.COLLECTOR + ".name", b -> b.text(p -> p
-                .index(true)
-                .norms(false)
-                .indexOptions(IndexOptions.Freqs)
-                .analyzer("index_name_ngram")
-                .searchAnalyzer("search")
-                .fields("prefix", prefixField -> prefixField.text(p1 -> p1
-                        .index(true)
-                        .norms(false)
-                        .indexOptions(IndexOptions.Freqs)
-                        .analyzer("index_name_prefix")
-                        .searchAnalyzer("search_prefix")
-                ))
-        ));
-
-        mappings.properties(DocFields.COLLECTOR + ".parent", b -> b.text(p -> p
-                .index(true)
-                .norms(false)
-                .indexOptions(IndexOptions.Docs)
-                .analyzer("index_name_ngram")
-                .searchAnalyzer("search")
-        ));
-
-        for (var field : ADDRESS_FIELDS) {
-            mappings.properties(DocFields.COLLECTOR + ".field." + field, b -> b.text(p -> p
+        if (!reverseOnly) {
+            mappings.properties(DocFields.COUNTRYCODE, b -> b.keyword(p -> p
                     .index(true)
-                    .norms(false)
-                    .analyzer("index_raw")
-                    .searchAnalyzer("search")
-                    .fields("full", prefixField -> prefixField.text(p1 -> p1
+                    .docValues(false)
+            ));
+
+            mappings.properties(DocFields.HOUSENUMBER, b -> b.text(p -> p
+                    .index(true)
+                    .indexOptions(IndexOptions.Docs)
+                    .analyzer("index_housenumber")
+                    .searchAnalyzer("standard")
+                    .fields("full", f -> f.text(full -> full
                             .index(true)
                             .norms(false)
                             .indexOptions(IndexOptions.Docs)
-                            .analyzer("index_name_full")
+                            .analyzer("lowercase_keyword")
+                    ))
+            ));
+
+            mappings.properties(DocFields.POSTCODE, b -> b.text(p -> p
+                    .index(true)
+                    .norms(false)
+                    .analyzer("index_raw")
+            ));
+
+            // General collectors.
+            mappings.properties(DocFields.COLLECTOR + ".all", b -> b.text(p -> p
+                    .index(true)
+                    .norms(false)
+                    .indexOptions(IndexOptions.Freqs)
+                    .analyzer("index_fullword")
+                    .searchAnalyzer("search")
+                    .fields("ngram", ngramField -> ngramField.text(p1 -> p1
+                            .index(true)
+                            .norms(false)
+                            .indexOptions(IndexOptions.Freqs)
+                            .analyzer("index_ngram")
+                            .searchAnalyzer("search")
+                    ))
+            ));
+
+            mappings.properties(DocFields.COLLECTOR + ".name", b -> b.text(p -> p
+                    .index(true)
+                    .norms(false)
+                    .indexOptions(IndexOptions.Freqs)
+                    .analyzer("index_name_ngram")
+                    .searchAnalyzer("search")
+                    .fields("prefix", prefixField -> prefixField.text(p1 -> p1
+                            .index(true)
+                            .norms(false)
+                            .indexOptions(IndexOptions.Freqs)
+                            .analyzer("index_name_prefix")
                             .searchAnalyzer("search_prefix")
                     ))
             ));
+
+            mappings.properties(DocFields.COLLECTOR + ".parent", b -> b.text(p -> p
+                    .index(true)
+                    .norms(false)
+                    .indexOptions(IndexOptions.Docs)
+                    .analyzer("index_name_ngram")
+                    .searchAnalyzer("search")
+            ));
+
+            for (var field : ADDRESS_FIELDS) {
+                mappings.properties(DocFields.COLLECTOR + ".field." + field, b -> b.text(p -> p
+                        .index(true)
+                        .norms(false)
+                        .analyzer("index_raw")
+                        .searchAnalyzer("search")
+                        .fields("full", prefixField -> prefixField.text(p1 -> p1
+                                .index(true)
+                                .norms(false)
+                                .indexOptions(IndexOptions.Docs)
+                                .analyzer("index_name_full")
+                                .searchAnalyzer("search_prefix")
+                        ))
+                ));
+            }
         }
     }
 }

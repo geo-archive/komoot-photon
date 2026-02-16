@@ -140,7 +140,7 @@ public class Server {
 
         new IndexSettingBuilder().setShards(5).createIndex(client, PhotonIndex.NAME);
 
-        new IndexMapping().putMapping(client, PhotonIndex.NAME);
+        new IndexMapping(dbProperties.getReverseOnly()).putMapping(client, PhotonIndex.NAME);
 
         saveToDatabase(dbProperties);
     }

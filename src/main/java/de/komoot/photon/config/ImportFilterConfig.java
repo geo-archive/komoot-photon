@@ -38,6 +38,10 @@ public class ImportFilterConfig {
             """)
     private boolean importGeometryColumn = false;
 
+    @Parameter(names = "-reverse-only", category = GROUP, description = """
+            Set up database for reverse geocoding only""")
+    private boolean reverseOnly = false;
+
     public Set<String> getLanguages() {
         return new HashSet<>(languages);
     }
@@ -62,6 +66,7 @@ public class ImportFilterConfig {
             dbProps.setLanguages(getLanguages());
         }
         dbProps.setSupportGeometries(importGeometryColumn);
+        dbProps.setReverseOnly(reverseOnly);
 
         if (extraTags != null) {
             dbProps.setExtraTags(extraTags);
