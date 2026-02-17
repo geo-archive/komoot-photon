@@ -111,7 +111,7 @@ Change to the directory where the `photon_data` database directory is located
 following command:
 
 ```
-java -jar photon-*.jar
+java -jar photon-*.jar serve
 ```
 
 The webserver is then available at `http://localhost:2322`.
