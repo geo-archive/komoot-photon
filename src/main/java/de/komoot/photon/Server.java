@@ -1,6 +1,8 @@
 package de.komoot.photon;
 
 import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import de.komoot.photon.config.PhotonDBConfig;
 import de.komoot.photon.opensearch.*;
@@ -15,6 +17,7 @@ import org.codelibs.opensearch.runner.OpenSearchRunner;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.opensearch.client.json.JsonData;
+import org.opensearch.client.json.JsonpMapper;
 import org.opensearch.client.json.jackson.JacksonJsonpMapper;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.HealthStatus;
@@ -189,7 +192,9 @@ public class Server {
             throw new UsageException("Cannot access property meta data. Database too old?");
         }
 
-        return meta.get(PhotonIndex.META_DB_PROPERTIES).to(DatabaseProperties.class);
+        final var mapper = new ObjectMapper();
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        return meta.get(PhotonIndex.META_DB_PROPERTIES).to(DatabaseProperties.class, new JacksonJsonpMapper(mapper));
     }
 
     public Importer createImporter(DatabaseProperties dbProperties) {
