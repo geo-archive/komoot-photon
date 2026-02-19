@@ -25,6 +25,7 @@ public class DatabaseProperties {
     private boolean supportGeometries = false;
     private boolean synonymsInstalled = false;
     private ConfigExtraTags extraTags = new ConfigExtraTags();
+    private boolean reverseOnly = false;
 
     @SuppressWarnings("unused")
     public void setDatabaseVersion(String version) {
@@ -120,5 +121,13 @@ public class DatabaseProperties {
                 ", synonymsInstalled=" + synonymsInstalled +
                 ", extraTags=" + extraTags +
                 '}';
+    }
+
+    public void setReverseOnly(boolean reverseOnly) {
+        this.reverseOnly = reverseOnly;
+    }
+
+    public boolean getReverseOnly() {
+        return reverseOnly;
     }
 }
