@@ -115,6 +115,18 @@ class QueryRelevanceTest extends ESBaseTester {
     }
 
     @Test
+    void testShortNameInteriorWordMatch() {
+        // Regression: a short query that equals an interior word of a multi-word name
+        // must surface the doc even when another doc is a 1-edit fuzzy match — the
+        // fuzzy hit would otherwise suppress the lenient retry and hide the answer.
+        setupDocs(
+                createDoc("place", "suburb", 1000, "name", "Sky River"),
+                createDoc("place", "village", 1001, "name", "Riven"));
+
+        assertSearchOsmIds("river", 1000, 1001);
+    }
+
+    @Test
     void testPartialNameWithImportanceOverFullName() {
         setupDocs(
                 createDoc("place", "hamlet", 1000, "name", "Ham")

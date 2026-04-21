@@ -50,6 +50,18 @@ public class SearchQueryBuilder extends BaseQueryBuilder {
                     .prefixLength(qlen <= 6 ? 1 : 2)
             ));
 
+            // Exact per-word ngram match against .name, to catch interior-word matches
+            // that .name.prefix misses (it concatenates words before n-gramming). Gated
+            // on qlen >= 5 because name_edge_ngram uses minGram=5 and nothing shorter
+            // can match there. Operator.And so multi-word queries require all tokens.
+            if (qlen >= 5) {
+                b.should(nameExact -> nameExact.match(nmb -> nmb
+                        .query(queryField)
+                        .field(DocFields.COLLECTOR + ".name")
+                        .operator(Operator.And)
+                        .boost(0.5f)));
+            }
+
             if (lenient) {
                 b.should(iq2 -> iq2.match(nmb -> nmb
                         .query(queryField)
