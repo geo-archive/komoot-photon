@@ -3,8 +3,7 @@
 [![Continuous Integration](https://github.com/komoot/photon/workflows/CI/badge.svg)](https://github.com/komoot/photon/actions)
 
 _photon_ is an open source geocoder built for
-[OpenStreetMap](https://openstreetmap.org) data. It is based on
-[elasticsearch](http://elasticsearch.org/)/[OpenSearch](https://opensearch.org/) -
+[OpenStreetMap](https://openstreetmap.org) data. It is based on [OpenSearch](https://opensearch.org/) -
 an efficient, powerful and highly scalable search platform.
 
 _photon_ was started by [komoot](http://www.komoot.de) who also provide the
