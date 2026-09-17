@@ -167,8 +167,13 @@ public class Server {
                 throw new UsageException("Database does not support synonyms.");
             }
 
+            ConfigSynonyms synonyms = null;
+            if (synonymFile != null) {
+                synonyms = ConfigSynonyms.loadFromFile(synonymFile);
+            }
+
             try {
-                (new IndexSettingBuilder()).setSynonymFile(synonymFile).updateIndex(client, PhotonIndex.NAME);
+                (new IndexSettingBuilder(synonyms)).updateIndex(client, PhotonIndex.NAME);
             } catch (OpenSearchException ex) {
                 closeClientQuietly();
                 throw new UsageException("Could not install synonyms: " + ex.getMessage());

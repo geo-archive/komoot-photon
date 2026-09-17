@@ -1,7 +1,5 @@
 package de.komoot.photon.opensearch;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import de.komoot.photon.ConfigSynonyms;
 import de.komoot.photon.UsageException;
 import org.jspecify.annotations.NullMarked;
@@ -10,7 +8,6 @@ import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.analysis.CustomAnalyzer;
 import org.opensearch.client.opensearch.indices.IndexSettingsAnalysis;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +30,13 @@ public class IndexSettingBuilder {
     private final IndexSettingsAnalysis.Builder settings = new IndexSettingsAnalysis.Builder();
     private int numShards = 1;
     @Nullable private ConfigSynonyms synonymConfig;
+
+    public IndexSettingBuilder() {
+    }
+
+    public IndexSettingBuilder(@Nullable ConfigSynonyms synonyms) {
+        synonymConfig = synonyms;
+    }
 
     public IndexSettingBuilder setShards(int numShards) {
         this.numShards = numShards;
@@ -61,19 +65,6 @@ public class IndexSettingBuilder {
         } finally {
             client.indices().open(req -> req.index(indexName));
         }
-    }
-
-    public IndexSettingBuilder setSynonymFile(@Nullable String synonymFile) throws IOException {
-        if (synonymFile != null) {
-            synonymConfig = new ObjectMapper()
-                    .configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, true)
-                    .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true)
-                    .readValue(new File(synonymFile), ConfigSynonyms.class);
-        } else {
-            synonymConfig = null;
-        }
-
-        return this;
     }
 
     private void updateSynonymFilters() {
