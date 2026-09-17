@@ -57,6 +57,7 @@ public class SearchQueryBuilder extends BaseQueryBuilder {
             if (qlen >= 5) {
                 b.should(nameExact -> nameExact.match(nmb -> nmb
                         .query(queryField)
+                        .analyzer("search_nosynonyms")
                         .field(DocFields.COLLECTOR + ".name")
                         .operator(Operator.And)
                         .boost(0.5f)));
@@ -65,9 +66,11 @@ public class SearchQueryBuilder extends BaseQueryBuilder {
             if (lenient) {
                 b.should(iq2 -> iq2.match(nmb -> nmb
                         .query(queryField)
+                        .analyzer("search_nosynonyms")
                         .field(DocFields.COLLECTOR + ".name")
                         .fuzziness("AUTO")
                         .prefixLength(2)
+                        .operator(Operator.And)
                         .boost(0.2f)));
             }
 
