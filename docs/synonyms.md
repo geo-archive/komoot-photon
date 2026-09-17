@@ -4,6 +4,11 @@ Photon has built-in support for using custom query-time synonyms and
 special phrases for searching a place by its type. This document explains
 how to configure this feature.
 
+> [!CAUTION]
+> Application of synonyms and classification terms is somewhat limited. They
+> will not be used in single-word searches and they do not support
+> search-as-you-type.
+
 ## Configuration
 
 Synonyms and classification terms are configured with a JSON file which can
