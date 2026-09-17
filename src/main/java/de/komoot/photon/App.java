@@ -364,7 +364,9 @@ public class App {
         DatabaseProperties dbProperties = server.loadFromDatabase();
 
         // Update the index settings in case there are any changes.
-        server.updateIndexSettings(args.getSynonymFile());
+        var synonyms = args.getSynonymFile() == null ? null : ConfigSynonyms.loadFromFile(args.getSynonymFile());
+
+        server.updateIndexSettings(synonyms);
         server.refreshIndexes();
 
         LOGGER.info("""
@@ -454,7 +456,7 @@ public class App {
                                 args.getDefaultLanguage(),
                                 args.getMaxResults(),
                                 dbProperties.getSupportGeometries()),
-                        server.createSearchHandler(args.getQueryTimeout()),
+                        server.createSearchHandler(args.getQueryTimeout(), synonyms),
                         formatter));
 
                 config.routes.get("/structured", new GenericSearchHandler<>(

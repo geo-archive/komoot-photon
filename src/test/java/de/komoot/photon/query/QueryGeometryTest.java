@@ -38,7 +38,7 @@ class QueryGeometryTest extends ESBaseTester {
         final var request = new SimpleSearchRequest();
         request.setQuery("muffle flu");
 
-        return getServer().createSearchHandler(1).search(request).toList();
+        return getServer().createSearchHandler(1, null).search(request).toList();
     }
 
 

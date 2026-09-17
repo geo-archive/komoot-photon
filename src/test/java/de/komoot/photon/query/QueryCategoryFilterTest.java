@@ -84,7 +84,7 @@ public class QueryCategoryFilterTest extends ESBaseTester {
         );
         request.setLimit(100, 100);
 
-        final var results =  getServer().createSearchHandler(1).search(request);
+        final var results =  getServer().createSearchHandler(1, null).search(request);
 
         assertThat(results)
                 .extracting(p -> p.get("housenumber"))

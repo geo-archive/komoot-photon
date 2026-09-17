@@ -45,7 +45,7 @@ class QueryByLanguageTest extends ESBaseTester {
         request.setQuery(query);
         request.setLanguage(lang);
 
-        return getServer().createSearchHandler(1).search(request).toList();
+        return getServer().createSearchHandler(1, null).search(request).toList();
     }
 
     @Test

@@ -1,9 +1,13 @@
 package de.komoot.photon;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,6 +25,12 @@ public class ConfigSynonyms {
     @JsonProperty("search_synonyms")
     @SuppressWarnings("unused")
     public void setSearchSynonyms(List<String> searchSynonyms) {
+        for (var synonym : searchSynonyms) {
+            if (synonym.matches(".*[ '-].*")) {
+                throw new UsageException("Error in synonym entry '" + synonym +
+                                         "'. Terms must not contain spaces or hyphens.");
+            }
+        }
         this.searchSynonyms = searchSynonyms;
     }
 
@@ -34,5 +44,12 @@ public class ConfigSynonyms {
         this.classificationTerms = classificationTerms.stream()
                 .filter(ConfigClassificationTerm::isValidCategory)
                 .collect(Collectors.toList());
+    }
+
+    public static ConfigSynonyms loadFromFile(String synonymFile) throws IOException {
+        return new ObjectMapper()
+                .configure(DeserializationFeature.FAIL_ON_NULL_CREATOR_PROPERTIES, true)
+                .configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, true)
+                .readValue(new File(synonymFile), ConfigSynonyms.class);
     }
 }

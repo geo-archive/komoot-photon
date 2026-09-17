@@ -117,7 +117,7 @@ class SuggestAddressesTest extends ESBaseTester {
         var request = new SimpleSearchRequest();
         request.setQuery(STREET_NAME);
 
-        var handler = getServer().createSearchHandler(1);
+        var handler = getServer().createSearchHandler(1, null);
         var results = handler.search(request).toList();
 
         assertEquals(1, results.size());
@@ -131,7 +131,7 @@ class SuggestAddressesTest extends ESBaseTester {
         request.setQuery(STREET_NAME);
         request.setSuggestAddresses(true);
 
-        var handler = getServer().createSearchHandler(1);
+        var handler = getServer().createSearchHandler(1, null);
         var results = handler.search(request).toList();
 
         assertEquals(2, results.size());
@@ -147,7 +147,7 @@ class SuggestAddressesTest extends ESBaseTester {
         request.setQuery(STREET_NAME + " 42");
         request.setSuggestAddresses(true);
 
-        var handler = getServer().createSearchHandler(1);
+        var handler = getServer().createSearchHandler(1, null);
         var results = handler.search(request).toList();
 
         assertEquals(1, results.size());
@@ -162,7 +162,7 @@ class SuggestAddressesTest extends ESBaseTester {
         request.setQuery("Auelestr Triesen");
         request.setSuggestAddresses(true);
 
-        var handler = getServer().createSearchHandler(10);
+        var handler = getServer().createSearchHandler(10, null);
         var results = handler.search(request).toList();
 
         assertEquals(1, results.size(), "Expected only Triesen result, got: " + results);
@@ -179,7 +179,7 @@ class SuggestAddressesTest extends ESBaseTester {
         request.setQuery("Romsdalsveien");
         request.setSuggestAddresses(true);
 
-        var handler = getServer().createSearchHandler(10);
+        var handler = getServer().createSearchHandler(10, null);
         var results = handler.search(request).toList();
 
         assertEquals(2, results.size(), "Expected street and address, got: " + results);
@@ -194,7 +194,7 @@ class SuggestAddressesTest extends ESBaseTester {
         request.setQuery("Nils Gotlands veg");
         request.setSuggestAddresses(true);
 
-        var handler = getServer().createSearchHandler(10);
+        var handler = getServer().createSearchHandler(10, null);
         var results = handler.search(request).toList();
 
         assertEquals(2, results.size(), "Expected street and address, got: " + results);

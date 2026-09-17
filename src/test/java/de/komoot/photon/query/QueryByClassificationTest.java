@@ -44,7 +44,7 @@ class QueryByClassificationTest extends ESBaseTester {
         final var request = new SimpleSearchRequest();
         request.setQuery(query);
 
-        return getServer().createSearchHandler(1).search(request).toList();
+        return getServer().createSearchHandler(1, null).search(request).toList();
     }
 
     private void updateClassification(String key, String value, String... terms) throws IOException {
@@ -63,7 +63,7 @@ class QueryByClassificationTest extends ESBaseTester {
         writer.writeEndObject();
         writer.close();
 
-        getServer().updateIndexSettings(synonymPath.toString());
+        getServer().updateIndexSettings(ConfigSynonyms.loadFromFile(synonymPath.toString()));
         getServer().waitForReady();
     }
 
@@ -143,7 +143,7 @@ class QueryByClassificationTest extends ESBaseTester {
                 )
         ));
 
-        getServer().updateIndexSettings(synonymPath.toString());
+        getServer().updateIndexSettings(ConfigSynonyms.loadFromFile(synonymPath.toString()));
         getServer().waitForReady();
 
         assertThat(search("Station newtown"))
@@ -181,6 +181,7 @@ class QueryByClassificationTest extends ESBaseTester {
         Files.write(synonymPath, List.of(json), StandardCharsets.UTF_8);
 
         assertThatExceptionOfType(MismatchedInputException.class)
-                .isThrownBy(() -> getServer().updateIndexSettings(synonymPath.toString()));
+                .isThrownBy(() -> getServer().updateIndexSettings(
+                        ConfigSynonyms.loadFromFile(synonymPath.toString())));
     }
 }

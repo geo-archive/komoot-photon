@@ -1,27 +1,29 @@
 package de.komoot.photon.searcher;
 
+import de.komoot.photon.ConfigSynonyms;
 import de.komoot.photon.nominatim.model.PostcodeUtils;
 import de.komoot.photon.opensearch.DocFields;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 @NullMarked
 public class QueryReranker implements Consumer<PhotonResult> {
-    private static final Pattern WORD_BREAK_PATTERN = Pattern.compile("[-,: ]+");
+    private static final Pattern WORD_BREAK_PATTERN = Pattern.compile("[-,.: ]+");
     private final String query;
     private final String language;
     @Nullable private final String fallbackLanguage;
     private final boolean isMultiTermQuery;
     private final boolean isFullQuery;
+    @Nullable Map<String, String> synonyms;
 
-    public QueryReranker(String query, String language, @Nullable String fallbackLanguage) {
-        this.query = normalize(query);
+    public QueryReranker(String query, String language, @Nullable String fallbackLanguage,
+                         @Nullable Map<String, String> synonyms) {
+        this.synonyms = synonyms;
+        this.query = normalizeWithSynonyms(query);
         this.language = language;
         this.fallbackLanguage = fallbackLanguage;
         this.isMultiTermQuery = query.indexOf(',') >= 0;
@@ -38,7 +40,7 @@ public class QueryReranker implements Consumer<PhotonResult> {
     private double rescore(PhotonResult result) {
         var localeName = result.getLocalisedWithFallback(DocFields.NAME, language, fallbackLanguage, GeoJsonFormatter.NAME_PRECEDENCE);
         if (localeName != null) {
-            localeName = normalize(localeName);
+            localeName = normalizeWithSynonyms(localeName);
             if (!isMultiTermQuery) {
                 if (query.equals(localeName)) {
                     return 1.0;
@@ -71,7 +73,7 @@ public class QueryReranker implements Consumer<PhotonResult> {
         var hnrMatchScore = matchHousenumber(todo, result);
         var streetName = result.getLocalised(DocFields.STREET, language);
         if (streetName != null) {
-            streetName = normalize(streetName);
+            streetName = normalizeWithSynonyms(streetName);
         }
 
         if (hnrMatchScore > 0.0) {
@@ -200,7 +202,7 @@ public class QueryReranker implements Consumer<PhotonResult> {
 
     private double matchCountry(StringBuilder todo, @Nullable String name) {
         if (name != null) {
-            var norm = " " + normalize(name) + " ";
+            var norm = " " + normalizeWithSynonyms(name) + " ";
 
             if (norm.length() < todo.length()) {
                 var todoAsString = todo.toString();
@@ -218,7 +220,24 @@ public class QueryReranker implements Consumer<PhotonResult> {
         return 0.0;
     }
 
-    private String normalize(String in) {
+    private String normalizeWithSynonyms(String in) {
+        var norm = normalize(in);
+        if (synonyms == null || norm.isEmpty()) {
+            return norm;
+        }
+
+        var out = new StringBuilder(norm.length());
+	    for (var term : norm.split(" ")) {
+	        if (!out.isEmpty()) {
+	            out.append(' ');
+	        }
+	        out.append(synonyms.getOrDefault(term, term));
+	    }
+
+        return out.toString();
+    }
+
+    static private String normalize(String in) {
         return WORD_BREAK_PATTERN.matcher(in.toLowerCase()).replaceAll(" ").strip();
     }
 
@@ -234,12 +253,32 @@ public class QueryReranker implements Consumer<PhotonResult> {
     private void mapNames(@Nullable String in, ArrayList<String> list) {
         if (in != null) {
             for (var s : in.split(";")) {
-                var finname = normalize(s);
+                var finname = normalizeWithSynonyms(s);
                 if (!finname.isEmpty()) {
                     list.add(finname);
                 }
             }
         }
+    }
+
+    @Nullable public static Map<String, String> synonymMap(List<String> synonyms) {
+	    var map = new HashMap<String, String>();
+
+        for (var rule : synonyms) {
+            String canonical = null;
+            for (var term : rule.split(",")) {
+                var norm = normalize(term);
+                if (!norm.isEmpty()) {
+                    if (canonical == null) {
+                        canonical = norm;
+                    }
+                    map.put(norm, canonical);
+                }
+            }
+        }
+
+	    return map.isEmpty() ? null : map;
+
     }
 
 }

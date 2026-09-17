@@ -2,13 +2,20 @@ package de.komoot.photon.searcher;
 
 import org.assertj.core.api.AbstractAssert;
 
+import java.util.Arrays;
+
 public class QueryReRankerAssert extends AbstractAssert<QueryReRankerAssert, QueryReranker> {
     public QueryReRankerAssert(QueryReranker actual) {
         super(actual, QueryReRankerAssert.class);
     }
 
     public static QueryReRankerAssert assertThat(String query, String language) {
-        return new QueryReRankerAssert(new QueryReranker(query, language, null));
+        return new QueryReRankerAssert(new QueryReranker(query, language, null, null));
+    }
+
+    public static QueryReRankerAssert assertThat(String query, String language, String... synonymRules) {
+        return new QueryReRankerAssert(new QueryReranker(query, language, null,
+                QueryReranker.synonymMap(Arrays.stream(synonymRules).toList())));
     }
 
     public QueryReRankerAssert ranksResultsInOrder(PhotonResult... results) {

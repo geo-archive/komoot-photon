@@ -1,10 +1,12 @@
 package de.komoot.photon.opensearch;
 
+import de.komoot.photon.ConfigSynonyms;
 import de.komoot.photon.query.SimpleSearchRequest;
 import de.komoot.photon.searcher.PhotonResult;
 import de.komoot.photon.searcher.QueryReranker;
 import de.komoot.photon.searcher.SearchHandler;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.opensearch.client.opensearch.OpenSearchClient;
 import org.opensearch.client.opensearch._types.SearchType;
 import org.opensearch.client.opensearch._types.query_dsl.Query;
@@ -12,6 +14,7 @@ import org.opensearch.client.opensearch.core.SearchResponse;
 
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.stream.Stream;
 
 @NullMarked
@@ -20,10 +23,13 @@ public class OpenSearchSearchHandler implements SearchHandler<SimpleSearchReques
     private static final double NEG_DECAY_FACTOR = Math.log(0.5);
     private final OpenSearchClient client;
     private final String queryTimeout;
+    @Nullable private final Map<String, String> synonyms;
 
-    public OpenSearchSearchHandler(OpenSearchClient client, int queryTimeout) {
+    public OpenSearchSearchHandler(OpenSearchClient client, int queryTimeout, @Nullable ConfigSynonyms synonyms) {
         this.client = client;
         this.queryTimeout = queryTimeout + "s";
+        this.synonyms = (synonyms == null || synonyms.getSearchSynonyms() == null)
+                ? null : QueryReranker.synonymMap(synonyms.getSearchSynonyms());
     }
 
     @Override
@@ -57,7 +63,8 @@ public class OpenSearchSearchHandler implements SearchHandler<SimpleSearchReques
         }
 
         if (request.getQuery() != null) {
-            stream = stream.peek(new QueryReranker(request.getQuery(), request.getLanguage(), request.getDefaultLanguage()));
+            stream = stream.peek(new QueryReranker(request.getQuery(), request.getLanguage(),
+                    request.getDefaultLanguage(), synonyms));
         }
 
         return ResultScorer.adjustByNormalizedOpenSearchScore(stream)
