@@ -25,6 +25,12 @@ public class ConfigSynonyms {
     @JsonProperty("search_synonyms")
     @SuppressWarnings("unused")
     public void setSearchSynonyms(List<String> searchSynonyms) {
+        for (var synonym : searchSynonyms) {
+            if (synonym.matches(".*[ '-].*")) {
+                throw new UsageException("Error in synonym entry '" + synonym +
+                                         "'. Terms must not contain spaces or hyphens.");
+            }
+        }
         this.searchSynonyms = searchSynonyms;
     }
 
