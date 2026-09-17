@@ -50,7 +50,7 @@ class QueryFilterLayerTest extends ESBaseTester {
         request.setQuery("berlin");
         request.addLayerFilters(Arrays.stream(layers).collect(Collectors.toSet()));
 
-        return getServer().createSearchHandler(1).search(request).toList();
+        return getServer().createSearchHandler(1, null).search(request).toList();
     }
 
     private List<PhotonResult> reverse(String... layers) {

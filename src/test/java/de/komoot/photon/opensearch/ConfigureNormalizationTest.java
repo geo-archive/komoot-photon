@@ -32,7 +32,7 @@ public class ConfigureNormalizationTest extends ESBaseTester {
     private List<String> hitNames(String query) {
         var request = new SimpleSearchRequest();
         request.setQuery(query);
-        return getServer().createSearchHandler(20).search(request).toList()
+        return getServer().createSearchHandler(20, null).search(request).toList()
                 .stream()
                 .map(r -> r.getLocalised("name", "en"))
                 .toList();

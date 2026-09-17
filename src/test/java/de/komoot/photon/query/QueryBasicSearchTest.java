@@ -52,7 +52,7 @@ class QueryBasicSearchTest extends ESBaseTester {
             request.setLanguage(lang);
         }
 
-        return getServer().createSearchHandler(1).search(request).toList();
+        return getServer().createSearchHandler(1, null).search(request).toList();
     }
 
     private void assertWorking(SoftAssertions soft, String... queries) {

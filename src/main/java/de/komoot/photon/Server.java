@@ -147,7 +147,7 @@ public class Server {
         saveToDatabase(dbProperties);
     }
 
-    public void updateIndexSettings(@Nullable String synonymFile) throws IOException {
+    public void updateIndexSettings(@Nullable ConfigSynonyms synonyms) throws IOException {
         // This ensures we are on the right version. Do not mess with the
         // database if the version does not fit.
         var dbProperties = loadFromDatabase();
@@ -156,8 +156,8 @@ public class Server {
             dbProperties.setSynonymFiltersAvailable(true);
         }
 
-        if (dbProperties.getSynonymsInstalled() || synonymFile != null) {
-            if (synonymFile != null && !dbProperties.getSynonymFiltersAvailable()) {
+        if (dbProperties.getSynonymsInstalled() || synonyms != null) {
+            if (synonyms != null && !dbProperties.getSynonymFiltersAvailable()) {
                 LOGGER.error("""
                         This database cannot add synonyms on the fly.
 
@@ -167,11 +167,6 @@ public class Server {
                 throw new UsageException("Database does not support synonyms.");
             }
 
-            ConfigSynonyms synonyms = null;
-            if (synonymFile != null) {
-                synonyms = ConfigSynonyms.loadFromFile(synonymFile);
-            }
-
             try {
                 (new IndexSettingBuilder(synonyms)).updateIndex(client, PhotonIndex.NAME);
             } catch (OpenSearchException ex) {
@@ -179,7 +174,7 @@ public class Server {
                 throw new UsageException("Could not install synonyms: " + ex.getMessage());
             }
 
-            dbProperties.setSynonymsInstalled(synonymFile != null);
+            dbProperties.setSynonymsInstalled(synonyms != null);
             saveToDatabase(dbProperties);
         }
     }
@@ -234,8 +229,8 @@ public class Server {
         return new de.komoot.photon.opensearch.Updater(client);
     }
 
-    public SearchHandler<SimpleSearchRequest> createSearchHandler(int queryTimeoutSec) {
-        return new OpenSearchSearchHandler(client, queryTimeoutSec);
+    public SearchHandler<SimpleSearchRequest> createSearchHandler(int queryTimeoutSec, @Nullable ConfigSynonyms synonyms) {
+        return new OpenSearchSearchHandler(client, queryTimeoutSec, synonyms);
     }
 
     public SearchHandler<StructuredSearchRequest> createStructuredSearchHandler(int queryTimeoutSec) {

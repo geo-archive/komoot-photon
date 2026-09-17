@@ -140,4 +140,31 @@ public class QueryRankerTest {
                                 .putLocalized(DocFields.STREET, "default", "Main")
                         );
     }
+
+    @Test
+	void testSynonymTermCountsAsAMatch() {
+	    QueryReRankerAssert.assertThat("karl johans gt", "no", "gt,gate,gata")
+	            .scoresResultEqualTo(1.0, new MockPhotonResult().putName("no", "Karl Johans gate"));
+
+	    QueryReRankerAssert.assertThat("karl johans gt.", "no", "gt,gate,gata")
+	            .scoresResultEqualTo(1.0, new MockPhotonResult().putName("no", "Karl Johans gate"));
+	}
+
+
+    @Test
+	void testSynonymMatchOutranksPartialMatch() {
+	    QueryReRankerAssert.assertThat("askvoll kirke", "no", "kirke,kyrkje")
+	            .ranksResultsInOrder(
+	                    new MockPhotonResult().putName("no", "Askvoll kyrkje"),
+	                    new MockPhotonResult().putName("no", "Askvoll skule"));
+	}
+
+
+    @Test
+	void testWithoutSynonymsTermIsNotCredited() {
+	    QueryReRankerAssert.assertThat("karl johans gt", "no")
+	            .ranksResultsInOrder(
+	                    new MockPhotonResult().putName("no", "Karl Johans gt"),
+	                    new MockPhotonResult().putName("no", "Karl Johans gate"));
+	}
 }
