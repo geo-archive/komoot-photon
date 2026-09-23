@@ -25,6 +25,17 @@ public class PhotonResultAssert extends AbstractAssert<PhotonResultAssert, Photo
         return new PhotonResultAssert((results != null && idx < results.size()) ? results.get(idx) : null);
     }
 
+    public PhotonResultAssert sameOsmID(int id) {
+        isNotNull();
+
+        if (!Integer.valueOf(id).equals(actual.get("osm_id"))) {
+            failWithActualExpectedAndMessage(actual.get("osm_id"), id,
+                    "Invalid OSM ID.");
+        }
+
+        return this;
+    }
+
     public PhotonResultAssert sameOsmID(PhotonDoc doc) {
         if (actual == null) {
             failWithMessage("Element not found in list.");
