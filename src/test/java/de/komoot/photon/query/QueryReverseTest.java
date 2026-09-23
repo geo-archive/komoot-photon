@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
+import static de.komoot.photon.PhotonResultAssert.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class QueryReverseTest extends BaseTesterQuery {
@@ -53,22 +54,22 @@ class QueryReverseTest extends BaseTesterQuery {
     @Test
     void testReverse() {
         assertThat(reverse(10, 10, 0.1, 1))
-                .extracting(p -> p.get("osm_id"))
-                .containsExactly(100);
+                .singleElement(PHOTONRESULT).sameOsmID(100);
     }
 
     @Test
     void testDefaultLimitIsOne() {
         assertThat(reverse(10, 10, 20, null))
-                .extracting(p -> p.get("osm_id"))
-                .containsExactly(100);
+                .singleElement(PHOTONRESULT).sameOsmID(100);
     }
 
     @ParameterizedTest
     @ValueSource(ints = {2, 3, 10})
     void testReverseMultiple(int limit) {
         assertThat(reverse(10, 10, 20, limit))
-                .extracting(p -> p.get("osm_id"))
-                .containsExactly(100, 101);
+                .satisfiesExactly(
+                        p -> assertThat(p).sameOsmID(100),
+                        p -> assertThat(p).sameOsmID(101)
+                );
     }
 }

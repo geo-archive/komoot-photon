@@ -107,8 +107,7 @@ class SuggestAddressesTest extends BaseTesterQuery {
     @Test
     void searchWithoutSuggestAddressesReturnsOnlyStreet() {
         assertThat(search(STREET_NAME))
-                .hasSize(1)
-                .first(PHOTONRESULT).sameOsmID(street);
+                .singleElement(PHOTONRESULT).sameOsmID(street);
     }
 
     @Test
@@ -126,8 +125,7 @@ class SuggestAddressesTest extends BaseTesterQuery {
         // the alternative housenumber query path (it's redundant since the main query
         // already handles housenumber matching)
         assertThat(searchWithSuggestAddresses(STREET_NAME + " 42"))
-                .hasSize(1)
-                .first(PHOTONRESULT).sameOsmID(house);
+                .singleElement(PHOTONRESULT).sameOsmID(house);
     }
 
     @Test
@@ -135,8 +133,7 @@ class SuggestAddressesTest extends BaseTesterQuery {
         // When searching for "Auelestr Triesen", should only return addresses in Triesen,
         // not addresses in Vaduz just because they have a housenumber on the same street name
         assertThat(searchWithSuggestAddresses("Auelestr Triesen"))
-                .hasSize(1)
-                .first(PHOTONRESULT).sameOsmID(houseTriesen);
+                .singleElement(PHOTONRESULT).sameOsmID(houseTriesen);
     }
 
     @Test

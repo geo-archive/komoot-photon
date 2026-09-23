@@ -59,8 +59,7 @@ class PossessiveTokenizationTest extends BaseTesterQuery {
     @Test
     void osloSDoesNotPullInPossessivePois() {
         assertThat(search("Oslo S"))
-                .hasSize(1)
-                .first(PHOTONRESULT).sameOsmID(5);
+                .singleElement(PHOTONRESULT).sameOsmID(5);
     }
 
     @ParameterizedTest(name = "{0} -> {1}")
@@ -81,8 +80,7 @@ class PossessiveTokenizationTest extends BaseTesterQuery {
             "'o''sole',    9"
     })
     void queryFindsExpectedHit(String query, int expectedId) {
-        assertThat(search(query)).hasSize(1)
-                .first(PHOTONRESULT).sameOsmID(expectedId);
+        assertThat(search(query)).singleElement(PHOTONRESULT).sameOsmID(expectedId);
     }
 
     @ParameterizedTest(name = "{0} must NOT surface {1}")

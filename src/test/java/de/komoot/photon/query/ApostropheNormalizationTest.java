@@ -43,7 +43,6 @@ class ApostropheNormalizationTest extends BaseTesterQuery {
             "'Hawai''i',  2"
     })
     void curlyAndAsciiApostrophesMatchEachOther(String query, int osmId) {
-        assertThat(search(query)).hasSize(1)
-                        .first(PHOTONRESULT).sameOsmID(osmId);
+        assertThat(search(query)).singleElement(PHOTONRESULT).sameOsmID(osmId);
     }
 }
