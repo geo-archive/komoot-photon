@@ -484,12 +484,13 @@ public class App {
                     throw new UsageException("Update API enabled, but Nominatim database is not prepared. Run -nominatim-update-init-for first.");
                 }
 
+                // Tiny pitfall in javalin: strings are treated as being json already by json().
                 config.routes.get("/nominatim-update/status", ctx ->
-                        ctx.status(200).json(updater.isBusy() ? "BUSY" : "OK")
+                        ctx.status(200).json('"' + (updater.isBusy() ? "BUSY" : "OK") + '"')
                 );
                 config.routes.get("/nominatim-update", ctx -> {
                     new Thread(() -> App.startNominatimUpdate(updater, server)).start();
-                    ctx.status(200).json("nominatim update started (more information in console output) ...");
+                    ctx.status(200).json("\"nominatim update started (more information in console output) ...\"");
                 });
             }
 
