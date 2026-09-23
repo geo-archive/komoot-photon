@@ -10,7 +10,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
 
 class PhotonDocAddressSetTest {
@@ -25,23 +24,25 @@ class PhotonDocAddressSetTest {
     }
 
     private void assertDocWithHousenumber(PhotonDoc doc, String housenumber) {
-        assertAll(
-                () -> assertNotSame(baseDoc, doc),
-                () -> assertEquals("place", doc.getTagKey()),
-                () -> assertEquals("house", doc.getTagValue()),
-                () -> assertEquals("10000", doc.getPlaceId()),
-                () -> assertEquals("N", doc.getOsmType()),
-                () -> assertEquals(123, doc.getOsmId()),
-                () -> assertEquals(housenumber, doc.getHouseNumber())
-        );
+        assertThat(doc)
+                .isNotSameAs(baseDoc)
+                .hasFieldOrPropertyWithValue("houseNumber", housenumber)
+                .usingRecursiveComparison()
+                .ignoringFields("houseNumber")
+                .isEqualTo(baseDoc);
     }
 
     private void assertDocWithHnrAndStreet(PhotonDoc doc, String housenumber, String street) {
-        assertAll(
-                () -> assertDocWithHousenumber(doc, housenumber),
-                () -> assertEquals(Map.of("default", street), doc.getAddressParts().get(AddressType.STREET)),
-                () -> assertEquals(Map.of("default", "Hamburg"), doc.getAddressParts().get(AddressType.CITY))
-        );
+        assertThat(doc)
+                .isNotSameAs(baseDoc)
+                .hasFieldOrPropertyWithValue("houseNumber", housenumber)
+                .hasFieldOrPropertyWithValue("addressParts", Map.of(
+                                AddressType.STREET, Map.of ("default", street),
+                        AddressType.CITY, Map.of("default", "Hamburg")
+                        ))
+                .usingRecursiveComparison()
+                .ignoringFields("houseNumber", "addressParts")
+                .isEqualTo(baseDoc);
     }
 
     @Test
