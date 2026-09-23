@@ -1,8 +1,6 @@
 package de.komoot.photon.query;
 
-import de.komoot.photon.ESBaseTester;
 import de.komoot.photon.Importer;
-import de.komoot.photon.PhotonDoc;
 import de.komoot.photon.searcher.PhotonResult;
 import de.komoot.photon.searcher.TagFilter;
 import org.junit.jupiter.api.*;
@@ -21,7 +19,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class QueryFilterTagValueTest extends ESBaseTester {
+class QueryFilterTagValueTest extends BaseTesterQuery {
     private static final List<Map.Entry<String, String>> TAGS = List.of(
             Map.entry("tourism", "attraction"),
             Map.entry("tourism", "hotel"),
@@ -39,16 +37,13 @@ class QueryFilterTagValueTest extends ESBaseTester {
         Importer instance = makeImporter();
         double lon = 13.38886;
         double lat = 52.51704;
-        int i = 0;
         for (var entry : TAGS) {
             for (int j = 0; j < 2; ++j) {
-                instance.add(List.of(new PhotonDoc()
-                        .placeId(Integer.toString(i)).osmType("N").osmId(i).tagKey(entry.getKey()).tagValue(entry.getValue())
-                        .centroid(makePoint(lon, lat))
-                        .names(makeDocNames("name", "myPlace"))));
+                instance.add(List.of(createDoc("name", "myPlace")
+                        .tagKey(entry.getKey()).tagValue(entry.getValue())
+                        .centroid(makePoint(lon, lat))));
                 lon += 0.00004;
                 lat += 0.00006;
-                ++i;
             }
         }
         instance.finish();
@@ -61,7 +56,7 @@ class QueryFilterTagValueTest extends ESBaseTester {
         super.tearDown();
     }
 
-    private List<PhotonResult> searchWithTags(String[] params) {
+    private List<PhotonResult> searchWithTags(String... params) {
         SimpleSearchRequest request = new SimpleSearchRequest();
         request.setQuery("myplace");
         request.setLimit(50, 50);
@@ -69,29 +64,29 @@ class QueryFilterTagValueTest extends ESBaseTester {
             request.addOsmTagFilter(TagFilter.buildOsmTagFilter(param));
         }
 
-        return getServer().createSearchHandler(1, null).search(request).toList();
+        return search(request);
     }
 
-    private List<PhotonResult> reverseWithTags(String[] params) {
+    private List<PhotonResult> reverseWithTags(String... params) {
         ReverseRequest request = new ReverseRequest(FACTORY.createPoint(new Coordinate(13.38886, 52.51704)));
         request.setLimit(50, 50);
 
         for (String param : params) {
             request.addOsmTagFilter(TagFilter.buildOsmTagFilter(param));
         }
-        return getServer().createReverseHandler(1).search(request).toList();
+        return reverse(request);
     }
 
     @ParameterizedTest
     @MethodSource("simpleTagFilterProvider")
     void testSearchSingleTagFilter(String filter, int expectedResults) {
-        assertThat(searchWithTags(new String[]{filter})).hasSize(expectedResults);
+        assertThat(searchWithTags(filter)).hasSize(expectedResults);
     }
 
     @ParameterizedTest
     @MethodSource("simpleTagFilterProvider")
     void testReverseSingleTagFilter(String filter, int expectedResults) {
-        assertThat(reverseWithTags(new String[]{filter})).hasSize(expectedResults);
+        assertThat(reverseWithTags(filter)).hasSize(expectedResults);
     }
 
     static Stream<Arguments> simpleTagFilterProvider() {

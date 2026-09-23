@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonEncoding;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import de.komoot.photon.*;
-import de.komoot.photon.searcher.PhotonResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -19,12 +18,11 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.*;
+import static de.komoot.photon.PhotonResultAssert.assertThat;
 
-class QueryByClassificationTest extends ESBaseTester {
+class QueryByClassificationTest extends BaseTesterQuery {
     @TempDir
     private Path sharedTempDir;
-
-    private int testDocId = 10000;
 
     @BeforeEach
     void setup() throws IOException {
@@ -32,19 +30,11 @@ class QueryByClassificationTest extends ESBaseTester {
     }
 
     private PhotonDoc createDoc(String key, String value, String name) {
-        ++testDocId;
-        return new PhotonDoc()
-                .placeId(Integer.toString(testDocId)).osmType("W").osmId(testDocId)
+        return testDoc()
+                .osmType("W")
                 .tagKey(key).tagValue(value)
                 .categories(List.of(String.join(".", "osm", key, value)))
                 .names(makeDocNames("name", name));
-    }
-
-    private List<PhotonResult> search(String query) {
-        final var request = new SimpleSearchRequest();
-        request.setQuery(query);
-
-        return getServer().createSearchHandler(1, null).search(request).toList();
     }
 
     private void updateClassification(String key, String value, String... terms) throws IOException {
@@ -69,62 +59,41 @@ class QueryByClassificationTest extends ESBaseTester {
 
     @Test
     void testQueryByClassificationString() {
-        Importer instance = makeImporter();
-        instance.add(List.of(createDoc("amenity", "restaurant", "curliflower")));
-        instance.finish();
-        refresh();
+        var doc = createDoc("amenity", "restaurant", "curliflower");
+        setupDocs(doc);
 
-        assertThat(search("#osm.amenity.restaurant curli"))
-                .element(0)
-                .satisfies(p -> assertThat(p.get("osm_id")).isEqualTo(testDocId));
+        assertThat(search("#osm.amenity.restaurant curli"), 0).sameOsmID(doc);
     }
 
     @Test
     void testQueryByClassificationSynonym() throws IOException {
-        Importer instance = makeImporter();
-        instance.add(List.of(createDoc("amenity", "restaurant", "curliflower")));
-        instance.finish();
-        refresh();
+        var doc = createDoc("amenity", "restaurant", "curliflower");
+        setupDocs(doc);
 
         updateClassification("amenity", "restaurant", "pub", "kneipe");
 
-        assertThat(search("pub curli"))
-                .element(0)
-                .satisfies(p -> assertThat(p.get("osm_id")).isEqualTo(testDocId));
-
-        assertThat(search("curliflower kneipe"))
-                .element(0)
-                .satisfies(p -> assertThat(p.get("osm_id")).isEqualTo(testDocId));
+        assertThat(search("pub curli"), 0).sameOsmID(doc);
+        assertThat(search("curliflower kneipe"), 0).sameOsmID(doc);
     }
 
 
     @Test
     void testSynonymDoNotInterfereWithWords() throws IOException {
-        Importer instance = makeImporter();
-        instance.add(List.of(createDoc("amenity", "restaurant", "airport")));
-        instance.add(List.of(createDoc("aeroway", "terminal", "Houston")));
-        instance.finish();
-        refresh();
+        var restaurant = createDoc("amenity", "restaurant", "airport");
+        var terminal = createDoc("aeroway", "terminal", "Houston");
+        setupDocs(restaurant, terminal);
 
         updateClassification("aeroway", "terminal", "airport");
 
-        assertThat(search("airport"))
-                .element(0)
-                .satisfies(p -> assertThat(p.get("osm_id")).isEqualTo(testDocId - 1));
-
-
-        assertThat(search("airport houston"))
-                .element(0)
-                .satisfies(p -> assertThat(p.get("osm_id")).isEqualTo(testDocId));
+        assertThat(search("airport"), 0).sameOsmID(restaurant);
+        assertThat(search("airport houston"), 0).sameOsmID(terminal);
     }
 
     @Test
     void testSameSynonymForDifferentTags() throws IOException {
-        Importer instance = makeImporter();
-        instance.add(List.of(createDoc("railway", "halt", "Newtown")));
-        instance.add(List.of(createDoc("railway", "station", "King's Cross")));
-        instance.finish();
-        refresh();
+        var halt = createDoc("railway", "halt", "Newtown");
+        var station = createDoc("railway", "station", "King's Cross");
+        setupDocs(halt, station);
 
         Path synonymPath = sharedTempDir.resolve("synonym.json");
 
@@ -146,17 +115,9 @@ class QueryByClassificationTest extends ESBaseTester {
         getServer().updateIndexSettings(ConfigSynonyms.loadFromFile(synonymPath.toString()));
         getServer().waitForReady();
 
-        assertThat(search("Station newtown"))
-                .element(0)
-                .satisfies(p -> assertThat(p.get("osm_id")).isEqualTo(testDocId - 1));
-
-        assertThat(search("newtown stop"))
-                .element(0)
-                .satisfies(p -> assertThat(p.get("osm_id")).isEqualTo(testDocId - 1));
-
-        assertThat(search("king's cross Station"))
-                .element(0)
-                .satisfies(p -> assertThat(p.get("osm_id")).isEqualTo(testDocId));
+        assertThat(search("Station newtown"), 0).sameOsmID(halt);
+        assertThat(search("newtown stop"), 0).sameOsmID(halt);
+        assertThat(search("king's cross Station"), 0).sameOsmID(station);
     }
 
     @ParameterizedTest
@@ -172,9 +133,7 @@ class QueryByClassificationTest extends ESBaseTester {
             """
     })
     void testSynonymFileWithMissingField(String json) throws IOException {
-        Importer instance = makeImporter();
-        instance.finish();
-        refresh();
+        setupDocs();
 
         Path synonymPath = sharedTempDir.resolve("synonym.json");
 
