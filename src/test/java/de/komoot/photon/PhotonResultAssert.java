@@ -3,14 +3,22 @@ package de.komoot.photon;
 import de.komoot.photon.opensearch.DocFields;
 import de.komoot.photon.searcher.PhotonResult;
 import org.assertj.core.api.AbstractAssert;
+import org.assertj.core.api.InstanceOfAssertFactory;
 
 import java.util.List;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 public class PhotonResultAssert extends AbstractAssert<PhotonResultAssert, PhotonResult> {
+    public static InstanceOfAssertFactory<PhotonResult, PhotonResultAssert> PHOTONRESULT
+            = new InstanceOfAssertFactory<>(PhotonResult.class, PhotonResultAssert::new);
+
     protected PhotonResultAssert(PhotonResult result) {
         super(result, PhotonResultAssert.class);
+    }
+
+    public static PhotonResultAssert assertThat(PhotonResult result) {
+        return new PhotonResultAssert(result);
     }
 
     public static PhotonResultAssert assertThat(List<PhotonResult> results, int idx) {
