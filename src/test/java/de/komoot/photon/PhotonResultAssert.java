@@ -28,7 +28,8 @@ public class PhotonResultAssert extends AbstractAssert<PhotonResultAssert, Photo
     public PhotonResultAssert sameOsmID(int id) {
         isNotNull();
 
-        if (!Integer.valueOf(id).equals(actual.get("osm_id"))) {
+        if ((actual.get("osm_id") instanceof Long && !Long.valueOf(id).equals(actual.get("osm_id")))
+            || !Integer.valueOf(id).equals(actual.get("osm_id"))) {
             failWithActualExpectedAndMessage(actual.get("osm_id"), id,
                     "Invalid OSM ID.");
         }
@@ -71,6 +72,8 @@ public class PhotonResultAssert extends AbstractAssert<PhotonResultAssert, Photo
     }
 
     public PhotonResultAssert hasGeometryType(String gtype) {
+        isNotNull();
+
         assertThatJson(actual.get(DocFields.GEOMETRY))
                 .isObject().containsEntry("type", gtype);
 
@@ -78,6 +81,8 @@ public class PhotonResultAssert extends AbstractAssert<PhotonResultAssert, Photo
     }
 
     public PhotonResultAssert hasFieldValue(String field, Object expected) {
+        isNotNull();
+
         Object value = actual.get(field);
 
         if (value == null) {
@@ -93,6 +98,8 @@ public class PhotonResultAssert extends AbstractAssert<PhotonResultAssert, Photo
     }
 
     public PhotonResultAssert hasLocalisedFieldValue(String field, String locale, Object expected) {
+        isNotNull();
+
         Object value = actual.getLocalised(field, locale);
 
         if (value == null) {
@@ -108,6 +115,8 @@ public class PhotonResultAssert extends AbstractAssert<PhotonResultAssert, Photo
     }
 
     public PhotonResultAssert hasNoField(String field) {
+        isNotNull();
+
         if (actual.get(field) != null) {
             failWithMessage("Found field '%s' with content: %s", field, actual.get(field));
         }
@@ -116,6 +125,8 @@ public class PhotonResultAssert extends AbstractAssert<PhotonResultAssert, Photo
     }
 
     public PhotonResultAssert hasNoLocalisedField(String field, String locale) {
+        isNotNull();
+
         if (actual.getLocalised(field, locale) != null) {
             failWithMessage("Found field '%s' with content: %s", field, actual.get(field));
         }
