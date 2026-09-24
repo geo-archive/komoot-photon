@@ -5,11 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import de.komoot.photon.PhotonDoc;
-import org.junit.jupiter.api.Assertions;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class PlacexTestRow {
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -18,11 +19,11 @@ public class PlacexTestRow {
     private Long parentPlaceId;
     private String osmType = "N";
     private Long osmId;
-    private String key;
-    private String value;
-    private Map<String, String> names = new HashMap<>();
-    private Map<String, String> address = new HashMap<>();
-    private Map<String, String> extraTags = new HashMap<>();
+    private final String key;
+    private final String value;
+    private final Map<String, String> names = new HashMap<>();
+    private final Map<String, String> address = new HashMap<>();
+    private final Map<String, String> extraTags = new HashMap<>();
     private Integer rankAddress = 30;
     private Integer rankSearch = 30;
     private String centroid;
@@ -163,15 +164,22 @@ public class PlacexTestRow {
     }
 
     public void assertEquals(PhotonDoc doc) throws ParseException {
-        Assertions.assertEquals(Long.toString(placeId), doc.getPlaceId());
-        Assertions.assertEquals(osmType, doc.getOsmType());
-        Assertions.assertEquals(osmId, (Long) doc.getOsmId());
-        Assertions.assertEquals(key, doc.getTagKey());
-        Assertions.assertEquals(value, doc.getTagValue());
-        Assertions.assertEquals(new WKTReader().read(centroid), doc.getCentroid());
-        if (names.containsKey("name")) {
-            Assertions.assertEquals(names.get("name"), doc.getName().get("default"));
-        }
+        assertThat(doc)
+                .hasFieldOrPropertyWithValue("placeId", Long.toString(placeId))
+                .hasFieldOrPropertyWithValue("osmType", osmType)
+                .hasFieldOrPropertyWithValue("osmId", osmId)
+                .hasFieldOrPropertyWithValue("tagKey", key)
+                .hasFieldOrPropertyWithValue("tagValue", value)
+                .hasFieldOrPropertyWithValue("centroid", new WKTReader().read(centroid))
+                .hasFieldOrPropertyWithValue("postcode", postcode)
+                .satisfies(
+                        d -> {
+                            if (countryCode == null) {
+                                assertThat(d.getCountryCode()).isNull();
+                            } else {
+                                assertThat(countryCode.toUpperCase()).isEqualTo(d.getCountryCode());
+                            }
+                        });
     }
 
     public Long getPlaceId() {

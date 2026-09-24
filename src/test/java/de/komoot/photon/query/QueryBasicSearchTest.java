@@ -1,9 +1,5 @@
 package de.komoot.photon.query;
 
-import de.komoot.photon.ESBaseTester;
-import de.komoot.photon.Importer;
-import de.komoot.photon.PhotonDoc;
-import de.komoot.photon.searcher.PhotonResult;
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,48 +7,19 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import static org.assertj.core.api.Assertions.*;
-
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
  * Tests that the database backend produces queries which can find all
  * expected results. These tests do not check relevance.
  */
-class QueryBasicSearchTest extends ESBaseTester {
-    private int testDocId = 10000;
+class QueryBasicSearchTest extends BaseTesterQuery {
 
     @BeforeEach
     void setup(@TempDir Path dataDirectory) throws IOException {
         setUpES(dataDirectory);
-    }
-
-    private PhotonDoc createDoc(String... names) {
-        ++testDocId;
-        return new PhotonDoc()
-                .placeId(Integer.toString(testDocId)).osmType("N").osmId(testDocId).tagKey("place").tagValue("city")
-                .names(makeDocNames(names));
-    }
-
-    private void setupDocs(PhotonDoc... docs) {
-        Importer instance = makeImporter();
-        instance.add(Arrays.asList(docs));
-        instance.finish();
-        refresh();
-    }
-
-    private List<PhotonResult> search(String query, String lang) {
-        final var request = new SimpleSearchRequest();
-        request.setQuery(query);
-        if (lang != null) {
-            request.setLanguage(lang);
-        }
-
-        return getServer().createSearchHandler(1, null).search(request).toList();
     }
 
     private void assertWorking(SoftAssertions soft, String... queries) {
@@ -115,23 +82,6 @@ class QueryBasicSearchTest extends ESBaseTester {
         var soft = new SoftAssertions();
         assertWorking(soft, "Bœuff", "Boeuff");
         assertWorking(soft, "Noedss", "Nœdss");
-
-        soft.assertAll();
-    }
-
-    @Test
-    void testSearchWithEumlaut() {
-        setupDocs(createDoc("name", "Moëns"),
-                  createDoc("name", "Mons"));
-
-        var soft = new SoftAssertions();
-
-        for (String query : List.of("Moëns", "Moens", "Moenss", "Moënss")) {
-            soft.assertThat(search(query, "en"))
-                    .first()
-                    .satisfies(p ->
-                            assertThat(p.getLocalised("name", "default")).isEqualTo("Moëns"));
-        }
 
         soft.assertAll();
     }

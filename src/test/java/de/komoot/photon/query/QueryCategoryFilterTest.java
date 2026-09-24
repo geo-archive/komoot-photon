@@ -1,7 +1,5 @@
 package de.komoot.photon.query;
 
-import de.komoot.photon.ESBaseTester;
-import de.komoot.photon.Importer;
 import de.komoot.photon.PhotonDoc;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -14,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -21,33 +20,16 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class QueryCategoryFilterTest extends ESBaseTester {
+public class QueryCategoryFilterTest extends BaseTesterQuery {
 
     @BeforeAll
     void setUp(@TempDir Path dataDirectory) throws Exception {
         setUpES(dataDirectory);
-        Importer instance = makeImporter();
-
-        instance.add(makePlace(1,
-                "osm.tourism.hotel",
-                "accomodation.guest_house"
-        ));
-        instance.add(makePlace(2,
-                "osm.tourism.hotel",
-                "accomodation.hostel"
-        ));
-        instance.add(makePlace(3,
-                "osm.tourism.camping",
-                "accomodation.tent",
-                "accomodation.lodge"
-        ));
-        instance.add(makePlace(4,
-                "osm.amenity.playground",
-                "grade.A1"
-        ));
-
-        instance.finish();
-        refresh();
+        setupDocs(
+                makePlace(1, "osm.tourism.hotel", "accomodation.guest_house"),
+                makePlace(2, "osm.tourism.hotel", "accomodation.hostel"),
+                makePlace(3, "osm.tourism.camping", "accomodation.tent", "accomodation.lodge"),
+                makePlace(4, "osm.amenity.playground", "grade.A1"));
     }
 
     @AfterAll
@@ -57,14 +39,10 @@ public class QueryCategoryFilterTest extends ESBaseTester {
     }
 
 
-    private List<PhotonDoc> makePlace(int id, String... categories) {
-        return List.of(new PhotonDoc()
-                .osmType("N").osmId(100 + id)
-                .names(makeDocNames("name", "Foobar"))
-                .houseNumber(Integer.toString(id))
-                .categories(Arrays.stream(categories).collect(Collectors.toList()))
-                .centroid(makePoint(0.1, 45.45))
-        );
+    private PhotonDoc makePlace(int id, String... categories) {
+        return createDoc("name", "Foobar")
+                .osmId(id)
+                .categories(Arrays.stream(categories).toList());
     }
 
     @ParameterizedTest
@@ -84,14 +62,11 @@ public class QueryCategoryFilterTest extends ESBaseTester {
         );
         request.setLimit(100, 100);
 
-        final var results =  getServer().createSearchHandler(1, null).search(request);
+        final var results = search(request);
 
         assertThat(results)
-                .extracting(p -> p.get("housenumber"))
-                .containsExactlyInAnyOrder(ids.stream()
-                        .map(i -> Integer.toString(i))
-                        .toArray()
-                );
+                .extracting(p -> Objects.requireNonNull(p.get("osm_id")))
+                .containsExactlyInAnyOrder(ids.toArray());
     }
 
     static Stream<Arguments> filterProvider() {
@@ -120,6 +95,4 @@ public class QueryCategoryFilterTest extends ESBaseTester {
                         List.of(3))
         );
     }
-
-
 }

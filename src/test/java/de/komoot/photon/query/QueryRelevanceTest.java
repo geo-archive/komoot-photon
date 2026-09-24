@@ -1,11 +1,8 @@
 package de.komoot.photon.query;
 
-import de.komoot.photon.ESBaseTester;
 import org.junit.jupiter.api.io.TempDir;
 import org.locationtech.jts.geom.Coordinate;
-import de.komoot.photon.Importer;
 import de.komoot.photon.PhotonDoc;
-import de.komoot.photon.searcher.PhotonResult;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,7 +10,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 
@@ -21,7 +17,7 @@ import static org.assertj.core.api.Assertions.*;
  * Test that the database backend produces queries that rank the
  * results in the expected order.
  */
-class QueryRelevanceTest extends ESBaseTester {
+class QueryRelevanceTest extends BaseTesterQuery {
 
     @BeforeEach
     void setup(@TempDir Path dataDirectory) throws IOException {
@@ -29,29 +25,7 @@ class QueryRelevanceTest extends ESBaseTester {
     }
 
     private PhotonDoc createDoc(String key, String value, long id, String... names) {
-        return new PhotonDoc()
-                .placeId(Long.toString(id)).osmType("N").osmId(id).tagKey(key).tagValue(value)
-                .names(makeDocNames(names));
-    }
-
-    private void setupDocs(PhotonDoc... docs) {
-        Importer instance = makeImporter();
-        for (var doc : docs) {
-            instance.add(List.of(doc));
-        }
-        instance.finish();
-        refresh();
-    }
-
-    private List<PhotonResult> search(String query) {
-        final var request = new SimpleSearchRequest();
-        request.setQuery(query);
-
-        return getServer().createSearchHandler(1, null).search(request).toList();
-    }
-
-    private List<PhotonResult> search(SimpleSearchRequest request) {
-        return getServer().createSearchHandler(1, null).search(request).toList();
+        return createDoc(names).osmId(id).tagKey(key).tagValue(value);
     }
 
     private SimpleSearchRequest createBiasedRequest()

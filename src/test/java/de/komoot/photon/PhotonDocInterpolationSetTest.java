@@ -1,14 +1,12 @@
 package de.komoot.photon;
 
-import org.assertj.core.api.SoftAssertions;
-import org.assertj.core.data.Offset;
+import org.assertj.core.data.Percentage;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.*;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
 
 class PhotonDocInterpolationSetTest {
@@ -17,30 +15,18 @@ class PhotonDocInterpolationSetTest {
     private final WKTReader reader = new WKTReader();
     private Geometry lineGeo;
 
-    private void assertCentroid(PhotonDoc doc, double x, double y) {
-        SoftAssertions soft = new SoftAssertions();
-
-        soft.assertThat(doc.getCentroid().getX()).isEqualTo(x, Offset.offset(0.0000001));
-        soft.assertThat(doc.getCentroid().getY()).isEqualTo(y, Offset.offset(0.0000001));
-
-        soft.assertAll();
-    }
-
     private void assertDocWithHousenumber(PhotonDoc doc, String housenumber, double y) {
-        assertAll(
-                () -> assertNotSame(baseDoc, doc),
-                () -> assertEquals("place", doc.getTagKey()),
-                () -> assertEquals("house", doc.getTagValue()),
-                () -> assertEquals("10000", doc.getPlaceId()),
-                () -> assertEquals("N", doc.getOsmType()),
-                () -> assertEquals(123, doc.getOsmId()),
-                () -> assertEquals(housenumber, doc.getHouseNumber()),
-                () -> assertCentroid(doc, 2.5, y)
-        );
+        assertThat(doc)
+                .hasFieldOrPropertyWithValue("houseNumber", housenumber)
+                .satisfies(d -> assertThat(d.getCentroid().getX()).isCloseTo(2.5, Percentage.withPercentage(0.001)))
+                .satisfies(d -> assertThat(d.getCentroid().getY()).isCloseTo(y, Percentage.withPercentage(0.001)))
+                .usingRecursiveComparison()
+                .ignoringFields("houseNumber", "centroid")
+                .isEqualTo(baseDoc);
     }
 
     @BeforeEach
-    void setupGeometry() throws ParseException{
+    void setupGeometry() throws ParseException {
         lineGeo = reader.read("LINESTRING(2.5 0.0 ,2.5 0.1)");
     }
 
@@ -59,10 +45,8 @@ class PhotonDocInterpolationSetTest {
     @Test
     void testSinglePointInterpolation() {
         assertThat(new PhotonDocInterpolationSet(baseDoc, 2000, 2000, 1, lineGeo))
-                .satisfiesExactly(
-                        d -> assertThat(d)
-                                .satisfies(dh -> assertThat(dh.getHouseNumber()).isEqualTo("2000"))
-                                .satisfies(dp -> assertCentroid(dp, 2.5, 0.05)));
+                .singleElement()
+                .satisfies(d -> assertDocWithHousenumber(d, "2000", 0.05));
     }
 
     @Test

@@ -2,19 +2,19 @@ package de.komoot.photon.nominatim.testdb;
 
 import de.komoot.photon.PhotonDoc;
 import de.komoot.photon.nominatim.model.AddressType;
-import org.junit.jupiter.api.Assertions;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class OsmlineTestRow {
     private static long placeIdSequence = 100000;
 
     private final Long placeId;
     private Long parentPlaceId;
-    private Long osmId = 23L;
+    private final Long osmId = 23L;
     private Integer startnumber;
     private Integer endnumber;
     private Integer step;
-    private String countryCode = "de";
     private String lineGeo;
 
     public OsmlineTestRow() {
@@ -42,18 +42,20 @@ public class OsmlineTestRow {
     public OsmlineTestRow add(JdbcTemplate jdbc) {
         jdbc.update("INSERT INTO location_property_osmline (place_id, parent_place_id, osm_id,"
                         + " startnumber, endnumber, step, linegeo, country_code, indexed_status)"
-                        + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)",
-                placeId, parentPlaceId, osmId, startnumber, endnumber, step, lineGeo, countryCode);
+                        + "VALUES (?, ?, ?, ?, ?, ?, ?, 'de', 0)",
+                placeId, parentPlaceId, osmId, startnumber, endnumber, step, lineGeo);
 
         return this;
     }
 
     public void assertEquals(PhotonDoc doc) {
-        Assertions.assertEquals("W", doc.getOsmType());
-        Assertions.assertEquals(osmId, (Long) doc.getOsmId());
-        Assertions.assertEquals("place", doc.getTagKey());
-        Assertions.assertEquals("house_number", doc.getTagValue());
-        Assertions.assertEquals(AddressType.HOUSE, doc.getAddressType());
+        assertThat(doc)
+                .hasFieldOrPropertyWithValue("osmType", "W")
+                .hasFieldOrPropertyWithValue("osmId", osmId)
+                .hasFieldOrPropertyWithValue("tagKey", "place")
+                .hasFieldOrPropertyWithValue("tagValue", "house_number")
+                .hasFieldOrPropertyWithValue("countryCode", "DE")
+                .hasFieldOrPropertyWithValue("addressType", AddressType.HOUSE);
     }
 
     public Long getPlaceId() {

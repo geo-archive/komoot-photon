@@ -4,7 +4,7 @@ import de.komoot.photon.ESBaseTester;
 import de.komoot.photon.Importer;
 import de.komoot.photon.PhotonDoc;
 import de.komoot.photon.Updater;
-import de.komoot.photon.searcher.PhotonResult;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -13,12 +13,15 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static de.komoot.photon.PhotonResultAssert.*;
 
 class UpdaterTest extends ESBaseTester {
 
-    @TempDir
-    private Path dataDirectory;
+    @BeforeEach
+    public void setUp(@TempDir Path dataDirectory) throws IOException {
+        getProperties().setSupportGeometries(true);
+        setUpES(dataDirectory);
+    }
 
     private PhotonDoc createDoc(String... names) {
         return new PhotonDoc()
@@ -27,86 +30,61 @@ class UpdaterTest extends ESBaseTester {
     }
 
     @Test
-    void addNameToDoc() throws IOException {
+    void addNameToDoc() {
         PhotonDoc doc = createDoc("name", "Foo");
 
-        setUpES(dataDirectory);
-        Importer instance = makeImporter();
-        instance.add(List.of(doc));
-        instance.finish();
-        refresh();
+        setupDocs(doc);
+
+        assertThat(getById(1234)).isNotNull()
+                .hasLocalisedFieldValue(DocFields.NAME, "en", "Foo")
+                .hasLocalisedFieldValue(DocFields.NAME, "default", "Foo");
 
         doc.names(makeDocNames("name", "Foo", "name:en", "Enfoo"));
-        Updater updater = makeUpdater();
-        updater.addOrUpdate(List.of(doc));
-        updater.finish();
-        refresh();
+        updateDocs(doc);
 
-        PhotonResult response = getById(1234);
-        assertNotNull(response);
-
-        assertEquals("Foo", response.getLocalised("name", "default"));
-        assertEquals("Enfoo", response.getLocalised("name", "en"));
+        assertThat(getById(1234)).isNotNull()
+                .hasLocalisedFieldValue(DocFields.NAME, "en", "Enfoo")
+                .hasLocalisedFieldValue(DocFields.NAME, "default", "Foo");
     }
 
     @Test
-    void removeNameFromDoc() throws IOException {
+    void removeNameFromDoc() {
         PhotonDoc doc = createDoc("name", "Foo", "name:en", "Enfoo");
 
-        setUpES(dataDirectory);
-        Importer instance = makeImporter();
-        instance.add(List.of(doc));
-        instance.finish();
-        refresh();
+        setupDocs(doc);
+
+        assertThat(getById(1234)).isNotNull()
+                .hasLocalisedFieldValue(DocFields.NAME, "en", "Enfoo")
+                .hasLocalisedFieldValue(DocFields.NAME, "default", "Foo");
 
         doc.names(makeDocNames("name:en", "Enfoo"));
-        Updater updater = makeUpdater();
-        updater.addOrUpdate(List.of(doc));
-        updater.finish();
-        refresh();
+        updateDocs(doc);
 
-        PhotonResult response = getById(1234);
-        assertNotNull(response);
-
-        assertNull(response.getLocalised("name","default"));
-        assertEquals("Enfoo", response.getLocalised("name","en"));
+        assertThat(getById(1234)).isNotNull()
+                .hasLocalisedFieldValue(DocFields.NAME, "en", "Enfoo")
+                .hasNoLocalisedField(DocFields.NAME, "default");
     }
 
     @Test
-    void addExtraTagsToDoc() throws IOException {
+    void addExtraTagsToDoc() {
+        getProperties().setExtraTags(List.of("website"));
+
         PhotonDoc doc = createDoc("name", "Foo");
 
-        getProperties().setExtraTags(List.of("website"));
-        setUpES(dataDirectory);
-        Importer instance = makeImporter();
-        instance.add(List.of(doc));
-        instance.finish();
-        refresh();
+        setupDocs(doc);
 
-        PhotonResult response = getById(1234);
-        assertNotNull(response);
-
-        assertNull(response.get("extra"));
+        assertThat(getById(1234)).isNotNull()
+                        .hasNoField(DocFields.EXTRA);
 
         doc.extraTags(Map.of("website", "http://site.foo"));
-        Updater updater = makeUpdater();
-        updater.addOrUpdate(List.of(doc));
-        updater.finish();
-        refresh();
+        updateDocs(doc);
 
-        response = getById(1234);
-        assertNotNull(response);
-
-        var extra = (Map<String, String>) response.get("extra");
-
-        assertNotNull(extra);
-        assertEquals(Map.of("website", "http://site.foo"), extra);
+        assertThat(getById(1234)).isNotNull()
+                .hasFieldValue(DocFields.EXTRA, Map.of("website", "http://site.foo"));
     }
 
     @Test
-    void deleteDoc() throws IOException {
-        getProperties().setExtraTags(List.of("website"));
-        setUpES(dataDirectory);
+    void deleteDoc() {
         Importer instance = makeImporter();
         instance.add(List.of(
                 createDoc().houseNumber("34"),
@@ -114,15 +92,15 @@ class UpdaterTest extends ESBaseTester {
         instance.finish();
         refresh();
 
-        assertNotNull(getById("1234"));
-        assertNotNull(getById("1234.1"));
+        assertThat(getById("1234")).isNotNull();
+        assertThat(getById("1234.1")).isNotNull();
 
         Updater updater = makeUpdater();
         updater.delete("1234");
         updater.finish();
         refresh();
 
-        assertNotNull(getById("1234"));
-        assertNull(getById("1234.1"));
+        assertThat(getById("1234")).isNotNull();
+        assertThat(getById("1234.1")).isNull();
     }
 }

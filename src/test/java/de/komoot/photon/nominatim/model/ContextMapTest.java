@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 public class ContextMapTest {
         private ContextMap testMap() {
@@ -20,22 +20,25 @@ public class ContextMapTest {
     void testAddName() {
         ContextMap map = new ContextMap();
 
-        assertTrue(map.isEmpty());
+        assertThat(map).isEmpty();
 
         map.addName("default", "something");
-        assertEquals(Set.of("something"), map.get("default"));
+        assertThat(map).isEqualTo(Map.of("default", Set.of("something")));
 
         map.addName("alt", "else");
-        assertEquals(Set.of("something"), map.get("default"));
-        assertEquals(Set.of("else"), map.get("alt"));
+        assertThat(map).isEqualTo(Map.of(
+                "default", Set.of("something"),
+                "alt", Set.of("else")));
 
         map.addName("default", "45");
-        assertEquals(Set.of("something", "45"), map.get("default"));
-        assertEquals(Set.of("else"), map.get("alt"));
+        assertThat(map).isEqualTo(Map.of(
+                "default", Set.of("something", "45"),
+                "alt", Set.of("else")));
 
         map.addName("alt", "else");
-        assertEquals(Set.of("something", "45"), map.get("default"));
-        assertEquals(Set.of("else"), map.get("alt"));
+        assertThat(map).isEqualTo(Map.of(
+                "default", Set.of("something", "45"),
+                "alt", Set.of("else")));
     }
 
     @Test
@@ -44,10 +47,10 @@ public class ContextMapTest {
 
         map.addAll(Map.of("alt", "XX", "default", "n3", "old", "former"));
 
-        assertEquals(3, map.size());
-        assertEquals(Set.of("n1", "n2", "n3"), map.get("default"));
-        assertEquals(Set.of("XX"), map.get("alt"));
-        assertEquals(Set.of("former"), map.get("old"));
+        assertThat(map).isEqualTo(Map.of(
+                "default", Set.of("n1", "n2", "n3"),
+                "alt", Set.of("XX"),
+                "old", Set.of("former")));
     }
 
     @Test
@@ -61,13 +64,13 @@ public class ContextMapTest {
         other.addName("alt", "YY");
 
         map.addAll(other);
-        assertEquals(3, map.size());
-        assertEquals(Set.of("n1", "n2", "n3"), map.get("default"));
-        assertEquals(Set.of("XX", "YY"), map.get("alt"));
-        assertEquals(Set.of("former"), map.get("old"));
+        assertThat(map).isEqualTo(Map.of(
+                "default", Set.of("n1", "n2", "n3"),
+                "alt", Set.of("XX", "YY"),
+                "old", Set.of("former")));
 
         map.addName("alt", "ZZ");
-        assertEquals(Set.of("XX", "YY", "ZZ"), map.get("alt"));
-        assertEquals(Set.of("XX", "YY"), other.get("alt"));
+        assertThat(map.get("alt")).isEqualTo(Set.of("XX", "YY", "ZZ"));
+        assertThat(other.get("alt")).isEqualTo(Set.of("XX", "YY"));
     }
 }
