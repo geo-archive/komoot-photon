@@ -8,28 +8,30 @@ import org.opensearch.client.opensearch.OpenSearchClient;
 
 import java.time.Duration;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
 
 class MetricsConfigTest {
+    OpenSearchClient openSearchClient = new OpenSearchClient(null) {};
+
     @Test
     void testInit() {
-        OpenSearchClient openSearchClient = new OpenSearchClient(null) {};
-
-        MetricsConfig metricsConfig = MetricsConfig.setupMetrics("prometheus", openSearchClient);
-        assertNotNull(metricsConfig.getRegistry());
-        assertNotNull(metricsConfig.getPlugin());
-        assertTrue(metricsConfig.isEnabled());
+        assertThat(MetricsConfig.setupMetrics("prometheus", openSearchClient))
+                .satisfies(
+                        c -> assertThat(c.getRegistry()).isNotNull(),
+                        c -> assertThat(c.getPlugin()).isNotNull(),
+                        c -> assertThat(c.isEnabled()).isTrue()
+                );
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     void testNoInit(String metricsType) {
-        OpenSearchClient openSearchClient = new OpenSearchClient(null) {};
-
-        MetricsConfig metricsConfig = MetricsConfig.setupMetrics(metricsType, openSearchClient);
-        assertThrows(IllegalStateException.class, metricsConfig::getRegistry);
-        assertThrows(IllegalStateException.class, metricsConfig::getPlugin);
-        assertFalse(metricsConfig.isEnabled());
+        assertThat(MetricsConfig.setupMetrics(metricsType, openSearchClient))
+                .satisfies(
+                        c -> assertThatExceptionOfType(IllegalStateException.class).isThrownBy(c::getRegistry),
+                        c -> assertThatExceptionOfType(IllegalStateException.class).isThrownBy(c::getPlugin),
+                        c -> assertThat(c.isEnabled()).isFalse()
+                );
     }
 
     /**
@@ -41,7 +43,6 @@ class MetricsConfigTest {
      */
     @Test
     void testHttpServerRequestsTimerExposesHistogramBuckets() {
-        OpenSearchClient openSearchClient = new OpenSearchClient(null) {};
         MetricsConfig metricsConfig = MetricsConfig.setupMetrics("prometheus", openSearchClient);
         PrometheusMeterRegistry registry = metricsConfig.getRegistry();
 
@@ -49,16 +50,11 @@ class MetricsConfigTest {
         registry.timer("http.server.requests", "method", "GET", "uri", "/api", "status", "200")
                 .record(Duration.ofMillis(5));
 
-        String scrape = registry.scrape();
-
-        assertTrue(scrape.contains("http_server_requests_seconds_bucket"),
-                "expected histogram buckets for http.server.requests, got:\n" + scrape);
-        assertTrue(scrape.contains("le=\""),
-                "expected an 'le' label on the histogram buckets, got:\n" + scrape);
-        assertTrue(scrape.contains("http_server_requests_seconds_count"),
-                "expected _count series to remain present, got:\n" + scrape);
-        assertTrue(scrape.contains("http_server_requests_seconds_sum"),
-                "expected _sum series to remain present, got:\n" + scrape);
+        assertThat(registry.scrape())
+                .contains("http_server_requests_seconds_bucket")
+                .contains("le=\"")
+                .contains("http_server_requests_seconds_count")
+                .contains("http_server_requests_seconds_sum");
     }
 
     /**
@@ -68,15 +64,12 @@ class MetricsConfigTest {
      */
     @Test
     void testUnrelatedTimerDoesNotExposeHistogramBuckets() {
-        OpenSearchClient openSearchClient = new OpenSearchClient(null) {};
         MetricsConfig metricsConfig = MetricsConfig.setupMetrics("prometheus", openSearchClient);
         PrometheusMeterRegistry registry = metricsConfig.getRegistry();
 
         registry.timer("some.unrelated.timer").record(Duration.ofMillis(5));
 
-        String scrape = registry.scrape();
-
-        assertFalse(scrape.contains("some_unrelated_timer_seconds_bucket"),
-                "unrelated timers must not get histogram buckets, got:\n" + scrape);
+        assertThat(registry.scrape())
+                .doesNotContain("some_unrelated_timer_seconds_bucket");
     }
 }
