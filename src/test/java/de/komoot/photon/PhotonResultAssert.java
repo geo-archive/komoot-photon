@@ -7,7 +7,6 @@ import org.assertj.core.api.InstanceOfAssertFactory;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.*;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 public class PhotonResultAssert extends AbstractAssert<PhotonResultAssert, PhotonResult> {

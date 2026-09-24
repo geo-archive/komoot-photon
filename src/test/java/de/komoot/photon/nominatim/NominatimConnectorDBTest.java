@@ -1,7 +1,6 @@
 package de.komoot.photon.nominatim;
 
 import de.komoot.photon.DatabaseProperties;
-import de.komoot.photon.PhotonDoc;
 import de.komoot.photon.config.PostgresqlConfig;
 import de.komoot.photon.nominatim.testdb.*;
 import org.assertj.core.api.InstanceOfAssertFactories;
@@ -598,7 +597,7 @@ class NominatimConnectorDBTest {
     }
 
     @Test
-    void testBAdminLevelOfNonBoundariesIsIgnored() {
+    void testAdminLevelOfNonBoundariesIsIgnored() {
         var place = new PlacexTestRow("boundary", "something").name("Rio")
                 .ranks(16)
                 .country("us")
