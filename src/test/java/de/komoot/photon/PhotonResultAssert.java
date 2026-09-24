@@ -7,6 +7,7 @@ import org.assertj.core.api.InstanceOfAssertFactory;
 
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.*;
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
 
 public class PhotonResultAssert extends AbstractAssert<PhotonResultAssert, PhotonResult> {
@@ -73,6 +74,52 @@ public class PhotonResultAssert extends AbstractAssert<PhotonResultAssert, Photo
     public PhotonResultAssert hasGeometryType(String gtype) {
         assertThatJson(actual.get(DocFields.GEOMETRY))
                 .isObject().containsEntry("type", gtype);
+
+        return this;
+    }
+
+    public PhotonResultAssert hasFieldValue(String field, Object expected) {
+        Object value = actual.get(field);
+
+        if (value == null) {
+            failWithMessage("Field '%s' is missing.", field);
+        }
+
+        if (!value.equals(expected)) {
+            failWithActualExpectedAndMessage(value, expected,
+                    "Unexpected value for field '%s'.", field);
+        }
+
+        return this;
+    }
+
+    public PhotonResultAssert hasLocalisedFieldValue(String field, String locale, Object expected) {
+        Object value = actual.getLocalised(field, locale);
+
+        if (value == null) {
+            failWithMessage("Field '%s' is missing.", field);
+        }
+
+        if (!value.equals(expected)) {
+            failWithActualExpectedAndMessage(value, expected,
+                    "Unexpected value for field '%s' (locale: %s).", field, locale);
+        }
+
+        return this;
+    }
+
+    public PhotonResultAssert hasNoField(String field) {
+        if (actual.get(field) != null) {
+            failWithMessage("Found field '%s' with content: %s", field, actual.get(field));
+        }
+
+        return this;
+    }
+
+    public PhotonResultAssert hasNoLocalisedField(String field, String locale) {
+        if (actual.getLocalised(field, locale) != null) {
+            failWithMessage("Found field '%s' with content: %s", field, actual.get(field));
+        }
 
         return this;
     }

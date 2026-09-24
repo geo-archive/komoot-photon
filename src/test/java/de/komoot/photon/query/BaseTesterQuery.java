@@ -1,7 +1,6 @@
 package de.komoot.photon.query;
 
 import de.komoot.photon.ESBaseTester;
-import de.komoot.photon.Importer;
 import de.komoot.photon.PhotonDoc;
 import de.komoot.photon.searcher.PhotonResult;
 
@@ -43,14 +42,5 @@ public class BaseTesterQuery extends ESBaseTester {
 
     protected PhotonDoc createDoc(String... names) {
         return testDoc().names(makeDocNames(names));
-    }
-
-    protected void setupDocs(PhotonDoc... docs) {
-        Importer instance = makeImporter();
-        for (var doc : docs) {
-            instance.add(List.of(doc));
-        }
-        instance.finish();
-        refresh();
     }
 }

@@ -2,7 +2,6 @@ package de.komoot.photon.opensearch;
 
 import de.komoot.photon.query.StructuredSearchRequest;
 import de.komoot.photon.ESBaseTester;
-import de.komoot.photon.Importer;
 import de.komoot.photon.PhotonDoc;
 import de.komoot.photon.nominatim.model.AddressType;
 import de.komoot.photon.searcher.PhotonResult;
@@ -10,109 +9,104 @@ import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.*;
+import static de.komoot.photon.PhotonResultAssert.*;
+
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class StructuredQueryTest extends ESBaseTester {
 
-    private static final String COUNTRY_CODE = "DE";
-    private static final String LANGUAGE = "en";
-    private static final String DISTRICT = "MajorSuburb";
-    private static final String HOUSE_NUMBER = "42";
-    private static final String CITY = "Some City";
-    private static final String HAMLET = "Hamlet";
-    private static final String STREET = "Some street";
-    public static final String DISTRICT_POST_CODE = "12346";
+    private final PhotonDoc country = new PhotonDoc("0", "R", 100, "place", "country")
+            .names(makeDocNames("name", "Germany"))
+            .countryCode("DE")
+            .importance(1.0)
+            .addressType(AddressType.COUNTRY);
+
+    private final PhotonDoc city = new PhotonDoc("1", "R", 1, "place", "city")
+            .names(makeDocNames("name", "Some City"))
+            .countryCode("DE")
+            .postcode("12345")
+            .importance(1.0)
+            .addressType(AddressType.CITY);
+
+    private final PhotonDoc suburb = new PhotonDoc("2", "N", 2, "place", "suburb")
+            .names(makeDocNames("name", "MajorSuburb"))
+            .countryCode("DE")
+            .postcode("12346")
+            .addAddresses(Map.of("city", "Some City"), getProperties().getLanguages())
+            .importance(1.0)
+            .addressType(AddressType.DISTRICT);
+
+    private final PhotonDoc street = new PhotonDoc("3", "W", 3, "place", "street")
+            .names(makeDocNames("name", "Some street"))
+            .countryCode("DE")
+            .postcode("12345")
+            .addAddresses(Map.of("city", "Some City"), getProperties().getLanguages())
+            .importance(1.0)
+            .addressType(AddressType.STREET);
+
+    private final PhotonDoc house = new PhotonDoc("4", "R", 4, "place", "house")
+            .countryCode("DE")
+            .postcode("12345")
+            .addAddresses(Map.of("city", "Some City", "street", "Some street"), getProperties().getLanguages())
+            .houseNumber("42")
+            .importance(1.0)
+            .addressType(AddressType.HOUSE);
+
+    private final PhotonDoc busStop = new PhotonDoc("8", "N", 8, "highway", "house")
+            .names(makeDocNames("name", "Some City Some street"))
+            .countryCode("DE")
+            .postcode("12345")
+            .importance(0.9)
+            .addressType(AddressType.HOUSE);
+
+    private final PhotonDoc postcode = new PhotonDoc("10", "P", 1000, "place", "postcode")
+            .names(makeDocNames("name", "12346"))
+            .countryCode("DE")
+            .addAddresses(Map.of("city", "Some City"), getProperties().getLanguages())
+            .importance(0.2)
+            .categories(List.of("osm.place.postcode"))
+            .addressType(AddressType.OTHER);
+
+    private final PhotonDoc postcode2 = new PhotonDoc("11", "P", 1001, "place", "postcode")
+            .names(makeDocNames("name", "44512"))
+            .countryCode("DE")
+            .addAddresses(Map.of("city", "Some City"), getProperties().getLanguages())
+            .importance(0.2)
+            .categories(List.of("osm.place.postcode"))
+            .addressType(AddressType.OTHER);
+
+    private final PhotonDoc hamletHouse1 = addHamletHouse(5, "1");
+    private final PhotonDoc hamletHouse2 = addHamletHouse(6, "2");
+    private final PhotonDoc hamletHouse3 = addHamletHouse(7, "3");
+
+
+    private PhotonDoc addHamletHouse(int id, String houseNumber) {
+        return new PhotonDoc(Integer.toString(id), "R", id, "place", "house")
+                .countryCode("DE")
+                .addAddresses(Map.of("city", "Some City", "suburb", "Hamlet"), getProperties().getLanguages())
+                .houseNumber(houseNumber)
+                .importance(1.0)
+                .addressType(AddressType.HOUSE);
+    }
+
+
+    private List<PhotonResult> search(StructuredSearchRequest request) {
+        var queryHandler = getServer().createStructuredSearchHandler(1);
+        return queryHandler.search(request).toList();
+    }
 
     @BeforeAll
     void setUp(@TempDir Path dataDirectory) throws Exception {
-        getProperties().setLanguages(Set.of(LANGUAGE, "de", "fr"));
+        getProperties().setLanguages(Set.of("en", "de", "fr"));
         setUpES(dataDirectory);
-        Importer instance = makeImporter();
 
-        var country = new PhotonDoc("0", "R", 0, "place", "country")
-                .names(makeDocNames("name", "Germany"))
-                .countryCode(COUNTRY_CODE)
-                .importance(1.0)
-                .addressType(AddressType.COUNTRY);
-
-        var city = new PhotonDoc("1", "R", 1, "place", "city")
-                .names(makeDocNames("name", CITY))
-                .countryCode(COUNTRY_CODE)
-                .postcode("12345")
-                .importance(1.0)
-                .addressType(AddressType.CITY);
-
-        Map<String, String> address = new HashMap<>();
-        address.put("city", CITY);
-        var suburb = new PhotonDoc("2", "N", 2, "place", "suburb")
-                .names(makeDocNames("name", DISTRICT))
-                .countryCode(COUNTRY_CODE)
-                .postcode(DISTRICT_POST_CODE)
-                .addAddresses(address, getProperties().getLanguages())
-                .importance(1.0)
-                .addressType(AddressType.DISTRICT);
-
-        var street = new PhotonDoc("3", "W", 3, "place", "street")
-                .names(makeDocNames("name", STREET))
-                .countryCode(COUNTRY_CODE)
-                .postcode("12345")
-                .addAddresses(address, getProperties().getLanguages())
-                .importance(1.0)
-                .addressType(AddressType.STREET);
-
-        address.put("street", STREET);
-        var house = new PhotonDoc("4", "R", 4, "place", "house")
-                .countryCode(COUNTRY_CODE)
-                .postcode("12345")
-                .addAddresses(address, getProperties().getLanguages())
-                .houseNumber(HOUSE_NUMBER)
-                .importance(1.0)
-                .addressType(AddressType.HOUSE);
-
-        var busStop = new PhotonDoc("8", "N", 8, "highway", "house")
-                .names(makeDocNames("name", CITY + ' ' + STREET))
-                .countryCode(COUNTRY_CODE)
-                .postcode("12345")
-                .addAddresses(address, getProperties().getLanguages())
-                .houseNumber(HOUSE_NUMBER)
-                .importance(1.0)
-                .addressType(AddressType.HOUSE);
-
-        var postcode = new PhotonDoc("10", null, -1, "place", "postcode")
-                .names(makeDocNames("name", DISTRICT_POST_CODE))
-                .countryCode(COUNTRY_CODE)
-                .addAddresses(Map.of("city", CITY), getProperties().getLanguages())
-                .importance(0.2)
-                .categories(List.of("osm.place.postcode"))
-                .addressType(AddressType.OTHER);
-
-        var postcode2 = new PhotonDoc("11", null, -1, "place", "postcode")
-                .names(makeDocNames("name", "44512"))
-                .countryCode(COUNTRY_CODE)
-                .addAddresses(Map.of("city", CITY), getProperties().getLanguages())
-                .importance(0.2)
-                .categories(List.of("osm.place.postcode"))
-                .addressType(AddressType.OTHER);
-
-        instance.add(List.of(country));
-        instance.add(List.of(city));
-        instance.add(List.of(suburb));
-        instance.add(List.of(street));
-        instance.add(List.of(house));
-        instance.add(List.of(postcode));
-        instance.add(List.of(postcode2));
-        addHamletHouse(instance, 5, "1");
-        addHamletHouse(instance, 6, "2");
-        addHamletHouse(instance, 7, "3");
-        instance.add(List.of(busStop));
-        instance.finish();
-        refresh();
+        setupDocs(country, city, suburb, street, house, postcode, postcode2, busStop,
+                hamletHouse1, hamletHouse2, hamletHouse3);
     }
 
     @AfterAll
@@ -124,170 +118,121 @@ public class StructuredQueryTest extends ESBaseTester {
     @Test
     void findsDistrictFuzzy() {
         var request = new StructuredSearchRequest();
-        request.setCountryCode(COUNTRY_CODE);
-        request.setDistrict(DISTRICT + DISTRICT.charAt(DISTRICT.length() - 1));
+        request.setCountryCode("DE");
+        request.setDistrict("MajorSuburbb");
 
-        var result = search(request);
-        Assertions.assertEquals(2, result.get(DocFields.OSM_ID));
+        assertThat(search(request)).first(PHOTONRESULT).sameOsmID(suburb);
     }
 
     @Test
     void findsPostcode() {
         var request = new StructuredSearchRequest();
-        request.setCountryCode(COUNTRY_CODE);
-        request.setPostCode(DISTRICT_POST_CODE);
+        request.setCountryCode("DE");
+        request.setPostCode("12346");
 
-        var result = search(request);
-        Assertions.assertEquals("postcode", result.get(DocFields.OSM_VALUE));
-        Assertions.assertEquals(DISTRICT_POST_CODE, result.getLocalised("name", "default"));
+        assertThat(search(request)).first(PHOTONRESULT).sameOsmID(postcode);
     }
 
     @Test
     void findsDistrictByPostcode() {
         var request = new StructuredSearchRequest();
-        request.setCountryCode(COUNTRY_CODE);
-        request.setCity(CITY);
-        request.setPostCode(DISTRICT_POST_CODE);
+        request.setCountryCode("DE");
+        request.setCity("Some City");
+        request.setPostCode("12346");
 
-        var result = search(request);
-        Assertions.assertEquals(request.getPostCode(), result.get(DocFields.POSTCODE));
+        assertThat(search(request)).first(PHOTONRESULT).sameOsmID(suburb);
     }
 
     @Test
     void findsHouseNumberInHamletWithoutStreetName() {
         var request = new StructuredSearchRequest();
-        request.setDistrict(HAMLET);
+        request.setDistrict("Hamlet");
         request.setHouseNumber("2");
 
-        var queryHandler = getServer().createStructuredSearchHandler(1);
-        var results = queryHandler.search(request).toList();
-        assertEquals(1, results.size());
-        var result = results.getFirst();
-        assertEquals(request.getHouseNumber(), result.get(DocFields.HOUSENUMBER));
+        assertThat(search(request)).singleElement(PHOTONRESULT).sameOsmID(hamletHouse2);
     }
 
     @Test
-    void doesNotReturnBusStops() {
+    void streetSearchDoesNotReturnBusStops() {
         var request = new StructuredSearchRequest();
-        request.setCountryCode(COUNTRY_CODE);
-        request.setCity(CITY);
-        request.setStreet(STREET);
-        var queryHandler = getServer().createStructuredSearchHandler(1);
-        var results = queryHandler.search(request).toList();
-        for (var result : results)
-        {
-            assertNotEquals(5, result.get(DocFields.OSM_ID));
-        }
+        request.setCountryCode("DE");
+        request.setCity("Some City");
+        request.setStreet("Some street");
+
+        assertThat(search(request))
+                .noneSatisfy(p -> assertThat(p).sameOsmID(busStop));
     }
 
     @Test
     void returnsOnlyCountryForCountryRequests() {
         var request = new StructuredSearchRequest();
-        request.setCountryCode(COUNTRY_CODE);
-        var queryHandler = getServer().createStructuredSearchHandler(1);
-        var results = queryHandler.search(request).toList();
-        assertEquals(1, results.size());
-        var result = results.getFirst();
-        assertEquals(0, result.get(DocFields.OSM_ID));
+        request.setCountryCode("DE");
+
+        assertThat(search(request)).singleElement(PHOTONRESULT).sameOsmID(country);
     }
 
     @Test
     void doesNotReturnHousesForCityRequest() {
         var request = new StructuredSearchRequest();
-        request.setCountryCode(COUNTRY_CODE);
-        request.setCity(CITY);
+        request.setCountryCode("DE");
+        request.setCity("Some City");
 
-        var queryHandler = getServer().createStructuredSearchHandler(1);
-        var results = queryHandler.search(request).toList();
-
-        for (var result : results) {
-            assertNull(result.getLocalised(DocFields.STREET, LANGUAGE));
-            assertNull(result.get(DocFields.HOUSENUMBER));
-        }
+        assertThat(search(request))
+                .allSatisfy(p -> assertThat(p)
+                        .hasNoField(DocFields.HOUSENUMBER)
+                        .hasNoLocalisedField(DocFields.STREET, "en"));
     }
 
     @Test
-    void testWrongStreet() {
+    void testNonexistingStreetFallsBackToCity() {
         var request = new StructuredSearchRequest();
-        request.setCountryCode(COUNTRY_CODE);
-        request.setCity(CITY);
+        request.setCountryCode("DE");
+        request.setCity("Some City");
         request.setStreet("totally wrong");
-        request.setHouseNumber(HOUSE_NUMBER);
+        request.setHouseNumber("42");
 
-        var result = search(request);
-        assertNull(result.getLocalised(DocFields.STREET, LANGUAGE));
-        Assertions.assertEquals(request.getCity(), result.getLocalised(DocFields.NAME, LANGUAGE));
+        assertThat(search(request)).singleElement(PHOTONRESULT).sameOsmID(city);
     }
 
     @Test
     void testDistrictAsCity() {
         var request = new StructuredSearchRequest();
-        request.setCountryCode(COUNTRY_CODE);
-        request.setCity(DISTRICT);
-        var result = search(request);
-        Assertions.assertEquals(CITY, result.getLocalised(DocFields.CITY, LANGUAGE));
-        Assertions.assertEquals(request.getCity(), result.getLocalised(DocFields.NAME, LANGUAGE));
+        request.setCountryCode("DE");
+        request.setCity("MajorSuburb");
+
+        assertThat(search(request)).singleElement(PHOTONRESULT).sameOsmID(suburb);
     }
 
     @Test
-    void testWrongHouseNumber() {
+    void testMissingHouseNumberFallsBackToStreet() {
         var request = new StructuredSearchRequest();
-        request.setCountryCode(COUNTRY_CODE);
-        request.setCity(CITY);
-        request.setStreet(STREET);
+        request.setCountryCode("DE");
+        request.setCity("Some City");
+        request.setStreet("Some street");
         request.setHouseNumber("1");
-        var result = search(request);
-        assertNull(result.getLocalised(DocFields.HOUSENUMBER, LANGUAGE));
-        Assertions.assertEquals(request.getStreet(), result.getLocalised(DocFields.NAME, LANGUAGE));
-        Assertions.assertEquals(request.getCity(), result.getLocalised(DocFields.CITY, LANGUAGE));
+
+        assertThat(search(request)).singleElement(PHOTONRESULT).sameOsmID(street);
     }
 
     @Test
-    void testWrongHouseNumberAndWrongStreet() {
+    void testWrongHouseNumberAndWrongStreetFallsBackToCity() {
         var request = new StructuredSearchRequest();
-        request.setCountryCode(COUNTRY_CODE);
-        request.setCity(CITY);
+        request.setCountryCode("DE");
+        request.setCity("Some City");
         request.setStreet("does not exist");
         request.setHouseNumber("1");
-        var result = search(request);
-        assertNull(result.getLocalised(DocFields.HOUSENUMBER, LANGUAGE));
-        assertNull(result.getLocalised(DocFields.STREET, LANGUAGE));
-        Assertions.assertEquals(request.getCity(), result.getLocalised(DocFields.NAME, LANGUAGE));
+
+        assertThat(search(request)).singleElement(PHOTONRESULT).sameOsmID(city);
     }
 
     @Test
     void testHouse() {
         var request = new StructuredSearchRequest();
-        request.setCountryCode(COUNTRY_CODE);
-        request.setCity(CITY);
-        request.setStreet(STREET);
-        request.setHouseNumber(HOUSE_NUMBER);
+        request.setCountryCode("DE");
+        request.setCity("Some City");
+        request.setStreet("Some street");
+        request.setHouseNumber("42");
 
-        var result = search(request);
-        Assertions.assertEquals(request.getCity(), result.getLocalised(DocFields.CITY, LANGUAGE));
-        Assertions.assertEquals(request.getStreet(), result.getLocalised(DocFields.STREET, LANGUAGE));
-        Assertions.assertEquals(request.getHouseNumber(), result.get(DocFields.HOUSENUMBER));
-    }
-
-    private PhotonResult search(StructuredSearchRequest request) {
-        var queryHandler = getServer().createStructuredSearchHandler(1);
-        var results = queryHandler.search(request);
-
-        return results.findFirst().orElseThrow();
-    }
-
-    private void addHamletHouse(Importer instance, int id, String houseNumber) {
-        var hamletAddress = new HashMap<String, String>();
-        hamletAddress.put("city", CITY);
-        hamletAddress.put("suburb", HAMLET);
-
-        var doc = new PhotonDoc(Integer.toString(id), "R", id, "place", "house")
-                .countryCode(COUNTRY_CODE)
-                .addAddresses(hamletAddress, getProperties().getLanguages())
-                .houseNumber(houseNumber)
-                .importance(1.0)
-                .addressType(AddressType.HOUSE);
-
-        instance.add(List.of(doc));
+        assertThat(search(request)).singleElement(PHOTONRESULT).sameOsmID(house);
     }
 }

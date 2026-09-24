@@ -94,6 +94,24 @@ public class ESBaseTester {
         return server.getServer();
     }
 
+    protected void setupDocs(PhotonDoc... docs) {
+        Importer instance = makeImporter();
+        for (var doc : docs) {
+            instance.add(List.of(doc));
+        }
+        instance.finish();
+        refresh();
+    }
+
+    protected void updateDocs(PhotonDoc... docs) {
+        Updater updater = makeUpdater();
+        for (var doc : docs) {
+            updater.addOrUpdate(List.of(doc));
+        }
+        updater.finish();
+        refresh();
+    }
+
     protected TestServer getTestServer() {
         assert server != null;
 
